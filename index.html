@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+<<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
@@ -539,80 +540,80 @@
     <!-- TAB 4: INVESTMENT SIMULATOR -->
     <section id="tab-simulator" class="tab-panel mt-6 hidden">
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-4">
-          <h2 class="text-base font-bold text-slate-900">סימולטור צמיחת הון</h2>
-          <p class="mt-1 text-xs text-slate-500">בדוק לאן תגיע ההשקעה החודשית שלך לאורך זמן.</p>
-
-          <div class="mt-4 space-y-4">
-            <div>
-              <label for="simMonthly" class="block text-xs font-semibold text-slate-700">הפקדה חודשית להשקעה (₪)</label>
-              <div class="mt-1 flex gap-2">
-                <input id="simMonthly" type="number" min="0" step="100" value="1000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                <button id="syncMarginBtn" type="button" class="whitespace-nowrap rounded-lg bg-emerald-100 px-2.5 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-200">קח מהמרווח שלי</button>
-              </div>
-            </div>
-            <div>
-              <label for="simInitial" class="block text-xs font-semibold text-slate-700">סכום התחלתי קיים (₪)</label>
-              <input id="simInitial" type="number" min="0" step="500" value="0" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <div class="flex justify-between">
-                <label for="simRate" class="text-xs font-semibold text-slate-700">תשואה שנתית משוערת</label>
-                <span id="simRateLbl" class="text-xs font-bold text-[#0f4c5c]">7.0%</span>
-              </div>
-              <input id="simRate" type="range" min="1" max="12" step="0.5" value="7" class="mt-2 w-full accent-[#0f4c5c]" />
-            </div>
-            <div>
-              <div class="flex justify-between">
-                <label for="simYears" class="text-xs font-semibold text-slate-700">אופק השקעה (שנים)</label>
-                <span id="simYearsLbl" class="text-xs font-bold text-[#0f4c5c]">10 שנים</span>
-              </div>
-              <input id="simYears" type="range" min="1" max="30" step="1" value="10" class="mt-2 w-full accent-[#0f4c5c]" />
-            </div>
-          </div>
-
-          <div class="mt-6 rounded-xl bg-emerald-50 p-4 border border-emerald-200">
-            <p class="text-xs font-semibold text-emerald-900">שווי צפוי בתום התקופה</p>
-            <p id="simTotalValue" class="mt-1 text-2xl font-extrabold text-emerald-700">0 ₪</p>
-            <p id="simBreakdown" class="mt-1 text-xs text-emerald-800">הפקדות: 0 ₪ | רווח ריבית דריבית: 0 ₪</p>
-          </div>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-8">
-          <h2 class="text-base font-bold text-slate-900">תחזית צמיחת תיק ההשקעות</h2>
-          <div class="relative mt-4 h-80">
-            <canvas id="simChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import {
-      getAuth,
-      signInAnonymously,
-      signInWithCustomToken,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-      EmailAuthProvider,
-      linkWithCredential,
-      updateProfile,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Dynamic PWA icon setup for mobile installation
+    // Dynamic PWA icon, manifest & service worker setup for full Android WebAPK installation
     (function setupPWA() {
       try {
-        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#0f4c5c"/><text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="260" fill="#10b981">₪</text></svg>`;
-        const iconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgIcon);
+        function createPngIcon(size) {
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          const r = Math.round(size * 0.22);
+          ctx.fillStyle = '#0f4c5c';
+          ctx.beginPath();
+          ctx.moveTo(r, 0);
+          ctx.lineTo(size - r, 0);
+          ctx.quadraticCurveTo(size, 0, size, r);
+          ctx.lineTo(size, size - r);
+          ctx.quadraticCurveTo(size, size, size - r, size);
+          ctx.lineTo(r, size);
+          ctx.quadraticCurveTo(0, size, 0, size - r);
+          ctx.lineTo(0, r);
+          ctx.quadraticCurveTo(0, 0, r, 0);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#10b981';
+          ctx.font = `bold ${Math.round(size * 0.54)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('₪', size / 2, size * 0.54);
+          return canvas.toDataURL('image/png');
+        }
+
+        const icon192 = createPngIcon(192);
+        const icon512 = createPngIcon(512);
+
         const appleIcon = document.createElement('link');
         appleIcon.rel = 'apple-touch-icon';
-        appleIcon.href = iconUrl;
+        appleIcon.href = icon192;
         document.head.appendChild(appleIcon);
+
+        const baseUrl = window.location.href.split('#')[0].split('?')[0];
+        const manifestObj = {
+          name: 'ממשק פיננסי — תזרים וניהול הון',
+          short_name: 'ניהול הון',
+          start_url: baseUrl,
+          scope: baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1),
+          display: 'standalone',
+          orientation: 'portrait',
+          background_color: '#f4f7f9',
+          theme_color: '#0f4c5c',
+          dir: 'rtl',
+          lang: 'he',
+          icons: [
+            { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any' }
+          ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.getElementById('pwaManifestLink');
+        if (manifestLink) {
+          manifestLink.href = manifestUrl;
+        }
+
+        if ('serviceWorker' in navigator) {
+          const swCode = `
+            self.addEventListener('install', (e) => self.skipWaiting());
+            self.addEventListener('activate', (e) => self.clients.claim());
+            self.addEventListener('fetch', (e) => {});
+          `;
+          const swBlob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(swBlob);
+          navigator.serviceWorker.register(swUrl).catch(() => {});
+        }
       } catch (e) {}
     })();
 
@@ -1989,77 +1990,4 @@
         if (activeAuthMode === 'register') {
           if (authInstance.currentUser && authInstance.currentUser.isAnonymous) {
             const cred = EmailAuthProvider.credential(email, password);
-            const res = await linkWithCredential(authInstance.currentUser, cred);
-            if (displayName) {
-              await updateProfile(res.user, { displayName });
-            }
-            currentUser = res.user;
-            saveState();
-          } else {
-            const res = await createUserWithEmailAndPassword(authInstance, email, password);
-            if (displayName) {
-              await updateProfile(res.user, { displayName });
-            }
-            await setupUserSession(res.user);
-          }
-          showToast('החשבון נוצר והנתונים נשמרו בהצלחה!');
-        } else {
-          const res = await signInWithEmailAndPassword(authInstance, email, password);
-          await setupUserSession(res.user);
-          showToast('התחברת בהצלחה לחשבון שלך!');
-        }
-        updateAccountModalUI();
-      } catch (err) {
-        console.error('Auth error:', err);
-        let msg = 'שגיאה בהתחברות. בדוק אימייל וסיסמה.';
-        if (err.code === 'auth/email-already-in-use') msg = 'האימייל כבר רשום — לחץ על "התחברות לחשבון קיים".';
-        else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'אימייל או סיסמה שגויים.';
-        else if (err.code === 'auth/weak-password') msg = 'הסיסמה חייבת להכיל לפחות 6 תווים.';
-        showToast(msg);
-      }
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      if (!authInstance) return;
-      try {
-        await signOut(authInstance);
-        await signInAnonymously(authInstance);
-        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        await setupUserSession(authInstance.currentUser);
-        updateAccountModalUI();
-        showToast('התנתקת מהחשבון');
-      } catch (e) {
-        console.error(e);
-      }
-    });
-
-    document.getElementById('copySharedCodeBtn').addEventListener('click', () => {
-      const code = state.sharedGroupId || '';
-      if (!code) return;
-      const temp = document.createElement('textarea');
-      temp.value = code;
-      document.body.appendChild(temp);
-      temp.select();
-      document.execCommand('copy');
-      document.body.removeChild(temp);
-      showToast(`הקוד ${code} הועתק! שלח אותו לבן/בת הזוג`);
-    });
-
-    document.getElementById('joinSharedForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const rawCode = document.getElementById('joinSharedCodeInput').value.trim().toUpperCase();
-      if (!rawCode) return;
-      state.sharedGroupId = rawCode;
-      document.getElementById('joinSharedCodeInput').value = '';
-      await subscribeToSharedGroup(rawCode);
-      saveState();
-      updateAccountModalUI();
-      showToast(`הצטרפת לחשבון המשותף (${rawCode})!`);
-    });
-
-    applyScopeUI();
-    renderAll();
-    initCloudStorage();
-  </script>
-</body>
-</html>
+            const res = await linkWithCr
