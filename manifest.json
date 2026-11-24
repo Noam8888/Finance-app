@@ -1,7 +1,8 @@
 {
   "name": "ממשק פיננסי — ניהול הון",
   "short_name": "ניהול הון",
-  "start_url": "./index.html",
+  "start_url": "/Finance-app/",
+  "scope": "/Finance-app/",
   "display": "standalone",
   "background_color": "#f4f7f9",
   "theme_color": "#0f4c5c",
@@ -9,7 +10,8 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/2454/2454282.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
