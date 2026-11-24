@@ -1,5 +1,5 @@
-
-<<!DOCTYPE html>
+```html
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
@@ -7,8 +7,10 @@
   <meta name="theme-color" content="#0f4c5c" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="תזרים וניהול הון" />
-  <link id="pwaManifestLink" rel="manifest" href="./manifest.json" />
+  <meta name="apple-mobile-web-app-title" content="ניהול הון" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2454/2454282.png" />
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2454/2454282.png" />
   <title>ממשק פיננסי אישי — תזרים, שווי נקי ומרווח השקעה</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -78,74 +80,6 @@
     </div>
   </div>
 
-  <!-- Account / Auth & Household Modal -->
-  <div id="accountModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h2 class="text-lg font-extrabold text-slate-900">משתמש וחיבור חשבון משותף</h2>
-        <button id="closeAccountModalBtn" type="button" class="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 text-lg font-bold">×</button>
-      </div>
-
-      <!-- Current User Status -->
-      <div class="mt-4 rounded-xl bg-slate-50 p-3.5 border border-slate-200">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold text-slate-500">מצב חשבון נוכחי:</span>
-          <span id="modalAuthStatusBadge" class="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-800">חיבור אורח זמני</span>
-        </div>
-        <p id="modalUserEmail" class="mt-1 text-sm font-bold text-slate-800 break-all">לא מחובר עם אימייל</p>
-        <p class="mt-1 text-[11px] text-slate-500">מזהה משתמש: <span id="modalUserId" class="font-mono text-slate-700">—</span></p>
-      </div>
-
-      <!-- Login / Register Form (shown when anonymous) -->
-      <div id="authFormsSection" class="mt-4 space-y-3">
-        <p class="text-xs text-slate-600">צור חשבון אישי עם אימייל וסיסמה (או התחבר לחשבון קיים) כדי לגשת לנתונים מכל טלפון ולחבר בן/בת זוג:</p>
-        <form id="emailAuthForm" class="space-y-2.5">
-          <div>
-            <label for="authNameInput" class="block text-xs font-semibold text-slate-700">שם תצוגה (להרשמה)</label>
-            <input id="authNameInput" type="text" placeholder="למשל: נועם" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#0f4c5c] focus:outline-none" />
-          </div>
-          <div>
-            <label for="authEmailInput" class="block text-xs font-semibold text-slate-700">אימייל</label>
-            <input id="authEmailInput" type="email" required placeholder="name@example.com" dir="ltr" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-left focus:border-[#0f4c5c] focus:outline-none" />
-          </div>
-          <div>
-            <label for="authPassInput" class="block text-xs font-semibold text-slate-700">סיסמה (לפחות 6 תווים)</label>
-            <input id="authPassInput" type="password" required minlength="6" placeholder="••••••" dir="ltr" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-left focus:border-[#0f4c5c] focus:outline-none" />
-          </div>
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <button type="submit" data-auth-mode="register" class="rounded-lg bg-[#0f4c5c] px-3 py-2 text-xs font-bold text-white hover:bg-[#1b6b7f] transition">הרשמה ושמירת נתונים</button>
-            <button type="submit" data-auth-mode="login" class="rounded-lg border border-[#0f4c5c] bg-white px-3 py-2 text-xs font-bold text-[#0f4c5c] hover:bg-slate-50 transition">התחברות לחשבון קיים</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Signed-in actions -->
-      <div id="signedInActionsSection" class="mt-3 hidden">
-        <button id="logoutBtn" type="button" class="w-full rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition">התנתק מהחשבון</button>
-      </div>
-
-      <!-- Shared Account / Household Linking Section -->
-      <div class="mt-5 border-t border-slate-200 pt-4">
-        <h3 class="text-sm font-extrabold text-slate-900">חיבור שני משתמשים לחשבון משותף</h3>
-        <p class="mt-1 text-xs text-slate-500">החשבון האישי שלך נשאר פרטי לחלוטין. החשבון המשותף מסונכרן בזמן אמת בין שניכם.</p>
-
-        <div class="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-900">קוד החשבון המשותף הפעיל:</span>
-            <button id="copySharedCodeBtn" type="button" class="rounded-md bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 transition">העתק קוד</button>
-          </div>
-          <p id="activeSharedCodeDisplay" class="mt-1.5 font-mono text-base font-extrabold tracking-wider text-emerald-800 select-all">—</p>
-          <p id="sharedMembersText" class="mt-1 text-[11px] text-emerald-800/80">שלח את הקוד הזה לבן/בת הזוג כדי שיצטרפו לאותו חשבון משותף.</p>
-        </div>
-
-        <form id="joinSharedForm" class="mt-3 flex gap-2">
-          <input id="joinSharedCodeInput" type="text" required placeholder="הדבק קוד הצטרפות..." dir="ltr" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-xs font-mono text-left uppercase focus:border-[#0f4c5c] focus:outline-none" />
-          <button type="submit" class="whitespace-nowrap rounded-lg bg-slate-800 px-3 py-2 text-xs font-bold text-white hover:bg-slate-900 transition">הצטרף לחשבון</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <!-- Install App Guide Modal -->
   <div id="installModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
     <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
@@ -155,14 +89,13 @@
       </div>
       <div class="mt-4 space-y-3 text-xs text-slate-700 leading-relaxed">
         <div class="rounded-xl bg-slate-50 p-3 border border-slate-200">
-          <p class="font-bold text-slate-900">במכשירי iPhone (Safari):</p>
-          <p class="mt-1">לחץ על כפתור השיתוף בתחתית המסך (ריבוע עם חץ למעלה) ובחר ב-<strong>"הוסף למסך הבית" (Add to Home Screen)</strong>.</p>
+          <p class="font-bold text-slate-900">במכשירי Android (Chrome):</p>
+          <p class="mt-1">לחץ על תפריט 3 הנקודות בפינה העליונה ובחר ב-<strong>"התקן אפליקציה" (Install App)</strong> או <strong>"הוסף למסך הבית"</strong>.</p>
         </div>
         <div class="rounded-xl bg-slate-50 p-3 border border-slate-200">
-          <p class="font-bold text-slate-900">במכשירי Android (Chrome):</p>
-          <p class="mt-1">לחץ על תפריט שלוש הנקודות בפינה העליונה ובחר ב-<strong>"התקן אפליקציה" (Install App)</strong> או <strong>"הוסף למסך הבית"</strong>.</p>
+          <p class="font-bold text-slate-900">במכשירי iPhone (Safari):</p>
+          <p class="mt-1">לחץ על כפתור השיתוף בתחתית המסך ובחר ב-<strong>"הוסף למסך הבית" (Add to Home Screen)</strong>.</p>
         </div>
-        <p class="text-[11px] text-slate-500">לאחר ההתקנה האפליקציה תיפתח במסך מלא כמו אפליקציה רגילה ותסתנכרן בענן.</p>
       </div>
     </div>
   </div>
@@ -172,10 +105,7 @@
     <div class="mx-auto max-w-6xl px-4 py-5 sm:px-6">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <h1 id="headerTitle" class="text-xl font-bold sm:text-2xl">ממשק פיננסי — חשבון אישי</h1>
-            <span id="sharedLinkedPill" class="hidden rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-[11px] font-bold text-emerald-100 border border-emerald-300/30">משותף מחובר</span>
-          </div>
+          <h1 id="headerTitle" class="text-xl font-bold sm:text-2xl">ממשק פיננסי — חשבון אישי</h1>
           <p class="mt-1 text-sm text-slate-200">תזרים, חישוב מרווח השקעה ריאלי ושווי נקי — מעבר מהיר בין חשבון אישי למשותף</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -183,24 +113,21 @@
             <button id="scopePersonalBtn" type="button" class="rounded-md bg-white px-3 py-1.5 text-[#0f4c5c] shadow-sm transition">חשבון אישי</button>
             <button id="scopeSharedBtn" type="button" class="rounded-md px-3 py-1.5 text-white hover:bg-white/10 transition">חשבון משותף</button>
           </div>
-          <button id="openAccountModalBtn" type="button" class="flex items-center gap-1.5 rounded-lg bg-amber-400 px-3 py-2 text-xs font-extrabold text-slate-900 hover:bg-amber-300 transition shadow-sm">
-            <span id="userHeaderBtnLabel">התחבר / חבר בן זוג</span>
-          </button>
           <button id="privacySettingsBtn" type="button" class="rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25 transition">
             🔒 נעילה ופרטיות
           </button>
           <button id="lockNowBtn" type="button" class="hidden rounded-lg bg-rose-500/80 px-2.5 py-2 text-xs font-bold text-white hover:bg-rose-600 transition">
             נעל כעת
           </button>
-          <button id="installAppBtn" type="button" class="rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25 transition">
+          <button id="installAppBtn" type="button" class="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-600 transition shadow-sm">
             התקן בנייד
           </button>
-          <span id="cloudSyncBadge" class="rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-medium text-emerald-200">מתחבר לשמירה...</span>
+          <span id="cloudSyncBadge" class="rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-medium text-emerald-200">נשמר במכשיר 🔒</span>
           <label for="csvImportInput" class="cursor-pointer rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25 transition">
             ייבוא CSV
           </label>
           <input id="csvImportInput" type="file" accept=".csv" class="hidden" />
-          <button id="exportCsvBtn" type="button" class="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-600 transition">
+          <button id="exportCsvBtn" type="button" class="rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25 transition">
             ייצוא CSV לגיליון
           </button>
         </div>
@@ -244,7 +171,7 @@
     <!-- TAB 1: OVERVIEW -->
     <section id="tab-overview" class="tab-panel mt-6 space-y-6">
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <!-- Left/Right Col 1: Income & Margin Config -->
+        <!-- Col 1: Income & Margin Config -->
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-5">
           <h2 class="text-base font-bold text-slate-900">הגדרות הכנסה וחלוקה (חודשי)</h2>
           <p class="mt-1 text-xs text-slate-500">עדכן את הנתונים הקבועים שלך לחישוב מיידי של המרווח הפנוי להשקעה.</p>
@@ -256,7 +183,7 @@
             </div>
 
             <div id="partnerSalaryWrapper" class="hidden">
-              <label for="partnerSalaryInput" class="block text-xs font-semibold text-slate-700">משכורת 2 נטו החודש — 80% למשותף (₪)</label>
+              <label for="partnerSalaryInput" class="block text-xs font-semibold text-slate-700">משכורת 2 נטו החודש (₪)</label>
               <input id="partnerSalaryInput" type="number" min="0" step="100" placeholder="הזן סכום משכורת 2" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#0f4c5c] focus:outline-none" />
             </div>
 
@@ -285,7 +212,7 @@
             </div>
           </div>
 
-          <!-- Checking Account (מצב עו"ש) & Checking Goals Card -->
+          <!-- Checking Account & Checking Goals Card -->
           <div class="mt-6 rounded-xl border border-sky-200 bg-sky-50/50 p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -540,82 +467,62 @@
     <!-- TAB 4: INVESTMENT SIMULATOR -->
     <section id="tab-simulator" class="tab-panel mt-6 hidden">
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-    // Dynamic PWA icon, manifest & service worker setup for full Android WebAPK installation
-    (function setupPWA() {
-      try {
-        function createPngIcon(size) {
-          const canvas = document.createElement('canvas');
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext('2d');
-          const r = Math.round(size * 0.22);
-          ctx.fillStyle = '#0f4c5c';
-          ctx.beginPath();
-          ctx.moveTo(r, 0);
-          ctx.lineTo(size - r, 0);
-          ctx.quadraticCurveTo(size, 0, size, r);
-          ctx.lineTo(size, size - r);
-          ctx.quadraticCurveTo(size, size, size - r, size);
-          ctx.lineTo(r, size);
-          ctx.quadraticCurveTo(0, size, 0, size - r);
-          ctx.lineTo(0, r);
-          ctx.quadraticCurveTo(0, 0, r, 0);
-          ctx.closePath();
-          ctx.fill();
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-4">
+          <h2 class="text-base font-bold text-slate-900">סימולטור צמיחת הון</h2>
+          <p class="mt-1 text-xs text-slate-500">בדוק לאן תגיע ההשקעה החודשית שלך לאורך זמן.</p>
 
-          ctx.fillStyle = '#10b981';
-          ctx.font = `bold ${Math.round(size * 0.54)}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('₪', size / 2, size * 0.54);
-          return canvas.toDataURL('image/png');
-        }
+          <div class="mt-4 space-y-4">
+            <div>
+              <label for="simMonthly" class="block text-xs font-semibold text-slate-700">הפקדה חודשית להשקעה (₪)</label>
+              <div class="mt-1 flex gap-2">
+                <input id="simMonthly" type="number" min="0" step="100" value="1000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <button id="syncMarginBtn" type="button" class="whitespace-nowrap rounded-lg bg-emerald-100 px-2.5 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-200">קח מהמרווח שלי</button>
+              </div>
+            </div>
+            <div>
+              <label for="simInitial" class="block text-xs font-semibold text-slate-700">סכום התחלתי קיים (₪)</label>
+              <input id="simInitial" type="number" min="0" step="500" value="0" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <div class="flex justify-between">
+                <label for="simRate" class="text-xs font-semibold text-slate-700">תשואה שנתית משוערת</label>
+                <span id="simRateLbl" class="text-xs font-bold text-[#0f4c5c]">7.0%</span>
+              </div>
+              <input id="simRate" type="range" min="1" max="12" step="0.5" value="7" class="mt-2 w-full accent-[#0f4c5c]" />
+            </div>
+            <div>
+              <div class="flex justify-between">
+                <label for="simYears" class="text-xs font-semibold text-slate-700">אופק השקעה (שנים)</label>
+                <span id="simYearsLbl" class="text-xs font-bold text-[#0f4c5c]">10 שנים</span>
+              </div>
+              <input id="simYears" type="range" min="1" max="30" step="1" value="10" class="mt-2 w-full accent-[#0f4c5c]" />
+            </div>
+          </div>
 
-        const icon192 = createPngIcon(192);
-        const icon512 = createPngIcon(512);
+          <div class="mt-6 rounded-xl bg-emerald-50 p-4 border border-emerald-200">
+            <p class="text-xs font-semibold text-emerald-900">שווי צפוי בתום התקופה</p>
+            <p id="simTotalValue" class="mt-1 text-2xl font-extrabold text-emerald-700">0 ₪</p>
+            <p id="simBreakdown" class="mt-1 text-xs text-emerald-800">הפקדות: 0 ₪ | רווח ריבית דריבית: 0 ₪</p>
+          </div>
+        </div>
 
-        const appleIcon = document.createElement('link');
-        appleIcon.rel = 'apple-touch-icon';
-        appleIcon.href = icon192;
-        document.head.appendChild(appleIcon);
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-8">
+          <h2 class="text-base font-bold text-slate-900">תחזית צמיחת תיק ההשקעות</h2>
+          <div class="relative mt-4 h-80">
+            <canvas id="simChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-        const baseUrl = window.location.href.split('#')[0].split('?')[0];
-        const manifestObj = {
-          name: 'ממשק פיננסי — תזרים וניהול הון',
-          short_name: 'ניהול הון',
-          start_url: baseUrl,
-          scope: baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1),
-          display: 'standalone',
-          orientation: 'portrait',
-          background_color: '#f4f7f9',
-          theme_color: '#0f4c5c',
-          dir: 'rtl',
-          lang: 'he',
-          icons: [
-            { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any' },
-            { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any' }
-          ]
-        };
-
-        const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
-        const manifestUrl = URL.createObjectURL(manifestBlob);
-        const manifestLink = document.getElementById('pwaManifestLink');
-        if (manifestLink) {
-          manifestLink.href = manifestUrl;
-        }
-
-        if ('serviceWorker' in navigator) {
-          const swCode = `
-            self.addEventListener('install', (e) => self.skipWaiting());
-            self.addEventListener('activate', (e) => self.clients.claim());
-            self.addEventListener('fetch', (e) => {});
-          `;
-          const swBlob = new Blob([swCode], { type: 'application/javascript' });
-          const swUrl = URL.createObjectURL(swBlob);
-          navigator.serviceWorker.register(swUrl).catch(() => {});
-        }
-      } catch (e) {}
-    })();
+  <script>
+    // Register real Service Worker file for Android Chrome installation
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
 
     let deferredInstallPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -665,7 +572,6 @@
         }
       ],
       fixedExpenses: [
-        // משותף
         { id: 'fx_s1', account: 'משותף', name: 'שכירות', freq: 'חודשי', amount: 0 },
         { id: 'fx_s2', account: 'משותף', name: 'חשבון חשמל', freq: 'דו-חודשי', amount: 0 },
         { id: 'fx_s3', account: 'משותף', name: 'חשבון מים', freq: 'חודשי', amount: 0 },
@@ -674,7 +580,6 @@
         { id: 'fx_s6', account: 'משותף', name: 'אינטרנט', freq: 'חודשי', amount: 0 },
         { id: 'fx_s7', account: 'משותף', name: 'דלק', freq: 'חודשי', amount: 0 },
         { id: 'fx_s8', account: 'משותף', name: 'ביטוח רכב', freq: 'חודשי', amount: 0 },
-        // אישי
         { id: 'fx_p1', account: 'אישי', name: 'טלפון', freq: 'חודשי', amount: 0 },
         { id: 'fx_p2', account: 'אישי', name: 'כרטיס כלל', freq: 'חודשי', amount: 0 },
         { id: 'fx_p3', account: 'אישי', name: 'קופת חולים', freq: 'חודשי', amount: 0 },
@@ -695,28 +600,13 @@
       checkingGoals: [
         { id: 'cg_1', account: 'אישי', name: 'כרית ביטחון בעו"ש', target: 5000, saved: 0, monthly: 0 },
         { id: 'cg_2', account: 'משותף', name: 'רזרבה להוצאות בלתי צפויות', target: 10000, saved: 0, monthly: 0 }
-      ],
-      sharedGroupId: null
+      ]
     };
 
     let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
     let expensesChart = null;
     let allocationChart = null;
     let simChart = null;
-
-    // Cloud persistence & multi-user state
-    let appInstance = null;
-    let authInstance = null;
-    let db = null;
-    let currentAppId = 'default-app-id';
-    let currentUser = null;
-    let personalDocRef = null;
-    let sharedDocRef = null;
-    let unsubscribePersonal = null;
-    let unsubscribeShared = null;
-    let saveTimeout = null;
-    let isApplyingRemote = false;
-    let activeAuthMode = 'register';
 
     const LOCAL_STORAGE_KEY = 'private_finance_app_data_v1';
     const LOCAL_PIN_KEY = 'private_finance_app_pin_hash_v1';
@@ -731,146 +621,10 @@
       }
     }
 
-    function saveToLocalDevice() {
+    function saveState() {
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
       } catch (e) {}
-    }
-
-    function loadFromLocalDevice() {
-      try {
-        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (raw) {
-          state = mergeWithDefault(JSON.parse(raw));
-          syncInputsFromState();
-          applyScopeUI();
-          renderAll();
-          updateSyncBadge('נשמר במכשיר באופן פרטי 🔒', true);
-        }
-      } catch (e) {}
-    }
-
-    function checkPrivacyLockOnBoot() {
-      const savedHash = localStorage.getItem(LOCAL_PIN_KEY);
-      const lockNowBtn = document.getElementById('lockNowBtn');
-      if (savedHash) {
-        lockNowBtn.classList.remove('hidden');
-        document.getElementById('privacyLockOverlay').classList.remove('hidden');
-        setTimeout(() => document.getElementById('privacyPinInput').focus(), 100);
-      } else {
-        lockNowBtn.classList.add('hidden');
-      }
-    }
-
-    function generateGroupCode(uid) {
-      const base = (uid || Math.random().toString(36).slice(2)).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-      return 'FAM-' + base.slice(0, 6).padEnd(6, 'X');
-    }
-
-    function extractPersonalSlice(fullState) {
-      return {
-        scope: fullState.scope,
-        salary: fullState.salary,
-        extraMonthlyIncomePersonal: (fullState.extraMonthlyIncome && fullState.extraMonthlyIncome['אישי']) || 0,
-        sharedPct: fullState.sharedPct,
-        stipend: fullState.stipend,
-        goalsAlloc: fullState.goalsAlloc,
-        budgets: fullState.budgets,
-        transactions: fullState.transactions.filter(t => t.account === 'אישי'),
-        fixedExpenses: fullState.fixedExpenses.filter(f => f.account === 'אישי'),
-        assets: fullState.assets.filter(a => a.account === 'אישי'),
-        checkingBalancePersonal: (fullState.checkingBalances && fullState.checkingBalances['אישי']) || 0,
-        checkingGoals: (fullState.checkingGoals || []).filter(g => g.account === 'אישי'),
-        sharedGroupId: fullState.sharedGroupId
-      };
-    }
-
-    function extractSharedSlice(fullState) {
-      return {
-        partnerSalary: fullState.partnerSalary,
-        primarySalaryForShared: fullState.salary,
-        extraMonthlyIncomeShared: (fullState.extraMonthlyIncome && fullState.extraMonthlyIncome['משותף']) || 0,
-        sharedPct: fullState.sharedPct,
-        transactions: fullState.transactions.filter(t => t.account === 'משותף'),
-        fixedExpenses: fullState.fixedExpenses.filter(f => f.account === 'משותף'),
-        assets: fullState.assets.filter(a => a.account === 'משותף'),
-        checkingBalanceShared: (fullState.checkingBalances && fullState.checkingBalances['משותף']) || 0,
-        checkingGoals: (fullState.checkingGoals || []).filter(g => g.account === 'משותף')
-      };
-    }
-
-    function applySharedSliceToState(sharedData) {
-      if (!sharedData) return;
-      if (typeof sharedData.partnerSalary === 'number') state.partnerSalary = sharedData.partnerSalary;
-      if (!state.extraMonthlyIncome) state.extraMonthlyIncome = { 'אישי': 0, 'משותף': 0 };
-      if (typeof sharedData.extraMonthlyIncomeShared === 'number') {
-        state.extraMonthlyIncome['משותף'] = sharedData.extraMonthlyIncomeShared;
-      }
-
-      const personalTxs = state.transactions.filter(t => t.account !== 'משותף');
-      const sharedTxs = Array.isArray(sharedData.transactions) ? sharedData.transactions : [];
-      state.transactions = [...personalTxs, ...sharedTxs];
-
-      const personalFixed = state.fixedExpenses.filter(f => f.account !== 'משותף');
-      const sharedFixed = Array.isArray(sharedData.fixedExpenses) ? sharedData.fixedExpenses : [];
-      state.fixedExpenses = [...personalFixed, ...sharedFixed];
-
-      const personalAssets = state.assets.filter(a => a.account !== 'משותף');
-      const sharedAssets = Array.isArray(sharedData.assets) ? sharedData.assets : [];
-      state.assets = [...personalAssets, ...sharedAssets];
-
-      if (!state.checkingBalances) state.checkingBalances = { 'אישי': 0, 'משותף': 0 };
-      if (typeof sharedData.checkingBalanceShared === 'number') {
-        state.checkingBalances['משותף'] = sharedData.checkingBalanceShared;
-      }
-
-      const personalCGoals = (state.checkingGoals || []).filter(g => g.account !== 'משותף');
-      const sharedCGoals = Array.isArray(sharedData.checkingGoals) ? sharedData.checkingGoals : [];
-      state.checkingGoals = [...personalCGoals, ...sharedCGoals];
-    }
-
-    function updateAccountModalUI() {
-      const isAnon = !currentUser || currentUser.isAnonymous;
-      const statusBadge = document.getElementById('modalAuthStatusBadge');
-      const emailEl = document.getElementById('modalUserEmail');
-      const uidEl = document.getElementById('modalUserId');
-      const authForms = document.getElementById('authFormsSection');
-      const signedInSec = document.getElementById('signedInActionsSection');
-      const headerBtnLabel = document.getElementById('userHeaderBtnLabel');
-      const codeDisplay = document.getElementById('activeSharedCodeDisplay');
-      const linkedPill = document.getElementById('sharedLinkedPill');
-
-      uidEl.textContent = currentUser ? currentUser.uid : '—';
-      codeDisplay.textContent = state.sharedGroupId || '—';
-      if (state.sharedGroupId) {
-        linkedPill.classList.remove('hidden');
-        linkedPill.textContent = `משותף: ${state.sharedGroupId}`;
-      }
-
-      if (isAnon) {
-        statusBadge.textContent = 'חיבור אורח זמני';
-        statusBadge.className = 'rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-800';
-        emailEl.textContent = 'אורח (התחבר עם אימייל כדי לגשת מכל מכשיר)';
-        authForms.classList.remove('hidden');
-        signedInSec.classList.add('hidden');
-        headerBtnLabel.textContent = 'התחבר / חבר בן זוג';
-      } else {
-        statusBadge.textContent = 'חשבון מאומת בענן ✓';
-        statusBadge.className = 'rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800';
-        emailEl.textContent = (currentUser.displayName ? `${currentUser.displayName} • ` : '') + (currentUser.email || '');
-        authForms.classList.add('hidden');
-        signedInSec.classList.remove('hidden');
-        headerBtnLabel.textContent = currentUser.displayName || currentUser.email.split('@')[0];
-      }
-    }
-
-    function updateSyncBadge(text, isReady = true) {
-      const badge = document.getElementById('cloudSyncBadge');
-      if (!badge) return;
-      badge.textContent = text;
-      badge.className = isReady
-        ? 'rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-100'
-        : 'rounded-lg bg-amber-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-amber-100';
     }
 
     function mergeWithDefault(parsed) {
@@ -898,9 +652,29 @@
         },
         checkingGoals: Array.isArray(parsed.checkingGoals)
           ? parsed.checkingGoals
-          : JSON.parse(JSON.stringify(DEFAULT_STATE.checkingGoals)),
-        sharedGroupId: parsed.sharedGroupId || null
+          : JSON.parse(JSON.stringify(DEFAULT_STATE.checkingGoals))
       };
+    }
+
+    function loadFromLocalDevice() {
+      try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (raw) {
+          state = mergeWithDefault(JSON.parse(raw));
+        }
+      } catch (e) {}
+    }
+
+    function checkPrivacyLockOnBoot() {
+      const savedHash = localStorage.getItem(LOCAL_PIN_KEY);
+      const lockNowBtn = document.getElementById('lockNowBtn');
+      if (savedHash) {
+        lockNowBtn.classList.remove('hidden');
+        document.getElementById('privacyLockOverlay').classList.remove('hidden');
+        setTimeout(() => document.getElementById('privacyPinInput').focus(), 100);
+      } else {
+        lockNowBtn.classList.add('hidden');
+      }
     }
 
     function syncInputsFromState() {
@@ -911,192 +685,6 @@
       document.getElementById('stipendInput').value = state.stipend;
       document.getElementById('goalsAllocInput').value = state.goalsAlloc;
       document.getElementById('checkingBalanceInput').value = (state.checkingBalances && state.checkingBalances[state.scope]) || '';
-    }
-
-    function saveState() {
-      if (isApplyingRemote) return;
-      saveToLocalDevice();
-      if (!currentUser || !personalDocRef) {
-        updateSyncBadge('נשמר במכשיר 🔒', true);
-        return;
-      }
-      updateSyncBadge('שומר...', false);
-      clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(async () => {
-        if (!currentUser || !personalDocRef) return;
-        try {
-          const personalPayload = extractPersonalSlice(state);
-          await setDoc(personalDocRef, {
-            payload: JSON.stringify(personalPayload),
-            sharedGroupId: state.sharedGroupId,
-            updatedAt: Date.now()
-          }, { merge: true });
-
-          if (sharedDocRef && state.sharedGroupId) {
-            const sharedPayload = extractSharedSlice(state);
-            await setDoc(sharedDocRef, {
-              payload: JSON.stringify(sharedPayload),
-              groupId: state.sharedGroupId,
-              updatedAt: Date.now()
-            }, { merge: true });
-          }
-
-          updateSyncBadge('נשמר בענן ✓', true);
-        } catch (err) {
-          console.error('Save error:', err);
-          updateSyncBadge('שגיאת שמירה', false);
-        }
-      }, 350);
-    }
-
-    async function subscribeToSharedGroup(groupId) {
-      if (unsubscribeShared) {
-        unsubscribeShared();
-        unsubscribeShared = null;
-      }
-      if (!db || !currentUser || !groupId) return;
-
-      sharedDocRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'sharedAccounts', groupId);
-      const sharedSnap = await getDoc(sharedDocRef);
-      if (sharedSnap.exists() && sharedSnap.data().payload) {
-        isApplyingRemote = true;
-        applySharedSliceToState(JSON.parse(sharedSnap.data().payload));
-        syncInputsFromState();
-        renderAll();
-        isApplyingRemote = false;
-      } else {
-        await setDoc(sharedDocRef, {
-          payload: JSON.stringify(extractSharedSlice(state)),
-          groupId: groupId,
-          updatedAt: Date.now()
-        }, { merge: true });
-      }
-
-      unsubscribeShared = onSnapshot(sharedDocRef, (docSnap) => {
-        if (docSnap.metadata.hasPendingWrites) return;
-        if (docSnap.exists() && docSnap.data().payload) {
-          isApplyingRemote = true;
-          applySharedSliceToState(JSON.parse(docSnap.data().payload));
-          syncInputsFromState();
-          renderAll();
-          isApplyingRemote = false;
-        }
-      }, (error) => {
-        console.error('Shared snapshot error:', error);
-      });
-    }
-
-    async function setupUserSession(user) {
-      if (unsubscribePersonal) {
-        unsubscribePersonal();
-        unsubscribePersonal = null;
-      }
-      if (unsubscribeShared) {
-        unsubscribeShared();
-        unsubscribeShared = null;
-      }
-
-      currentUser = user;
-      if (!currentUser || !db) return;
-
-      personalDocRef = doc(db, 'artifacts', currentAppId, 'users', currentUser.uid, 'financeState', 'personal');
-      const snap = await getDoc(personalDocRef);
-
-      if (snap.exists() && snap.data().payload) {
-        isApplyingRemote = true;
-        const pData = JSON.parse(snap.data().payload);
-        state = mergeWithDefault(pData);
-        if (typeof pData.checkingBalancePersonal === 'number') {
-          state.checkingBalances['אישי'] = pData.checkingBalancePersonal;
-        }
-        if (typeof pData.extraMonthlyIncomePersonal === 'number') {
-          state.extraMonthlyIncome['אישי'] = pData.extraMonthlyIncomePersonal;
-        }
-        if (!state.sharedGroupId) {
-          state.sharedGroupId = snap.data().sharedGroupId || generateGroupCode(currentUser.uid);
-        }
-        syncInputsFromState();
-        applyScopeUI();
-        renderAll();
-        isApplyingRemote = false;
-      } else {
-        if (!state.sharedGroupId) {
-          state.sharedGroupId = generateGroupCode(currentUser.uid);
-        }
-        await setDoc(personalDocRef, {
-          payload: JSON.stringify(extractPersonalSlice(state)),
-          sharedGroupId: state.sharedGroupId,
-          updatedAt: Date.now()
-        });
-      }
-
-      await subscribeToSharedGroup(state.sharedGroupId);
-      updateAccountModalUI();
-      updateSyncBadge('נשמר בענן ✓', true);
-
-      unsubscribePersonal = onSnapshot(personalDocRef, (docSnap) => {
-        if (docSnap.metadata.hasPendingWrites) return;
-        if (docSnap.exists() && docSnap.data().payload) {
-          const pData = JSON.parse(docSnap.data().payload);
-          isApplyingRemote = true;
-          state.scope = pData.scope || state.scope;
-          state.salary = pData.salary ?? state.salary;
-          if (!state.extraMonthlyIncome) state.extraMonthlyIncome = { 'אישי': 0, 'משותף': 0 };
-          if (typeof pData.extraMonthlyIncomePersonal === 'number') {
-            state.extraMonthlyIncome['אישי'] = pData.extraMonthlyIncomePersonal;
-          }
-          state.sharedPct = pData.sharedPct ?? state.sharedPct;
-          state.stipend = pData.stipend ?? state.stipend;
-          state.goalsAlloc = pData.goalsAlloc ?? state.goalsAlloc;
-          state.budgets = { ...DEFAULT_STATE.budgets, ...(pData.budgets || {}) };
-          const sharedTxs = state.transactions.filter(t => t.account === 'משותף');
-          state.transactions = [...(pData.transactions || []), ...sharedTxs];
-          const sharedFixed = state.fixedExpenses.filter(f => f.account === 'משותף');
-          state.fixedExpenses = [...(pData.fixedExpenses || []), ...sharedFixed];
-          const sharedAssets = state.assets.filter(a => a.account === 'משותף');
-          state.assets = [...(pData.assets || []), ...sharedAssets];
-          if (typeof pData.checkingBalancePersonal === 'number') {
-            state.checkingBalances['אישי'] = pData.checkingBalancePersonal;
-          }
-          const sharedCGoals = (state.checkingGoals || []).filter(g => g.account === 'משותף');
-          state.checkingGoals = [...(pData.checkingGoals || []), ...sharedCGoals];
-          syncInputsFromState();
-          applyScopeUI();
-          renderAll();
-          isApplyingRemote = false;
-        }
-      }, (error) => {
-        console.error('Personal snapshot error:', error);
-      });
-    }
-
-    async function initCloudStorage() {
-      loadFromLocalDevice();
-      checkPrivacyLockOnBoot();
-      try {
-        currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        if (!firebaseConfig) {
-          updateSyncBadge('מצב פרטי במכשיר 🔒', true);
-          return;
-        }
-        appInstance = initializeApp(firebaseConfig);
-        authInstance = getAuth(appInstance);
-        db = getFirestore(appInstance);
-
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(authInstance, __initial_auth_token);
-        } else if (!authInstance.currentUser) {
-          await signInAnonymously(authInstance);
-        }
-
-        if (authInstance.currentUser) {
-          await setupUserSession(authInstance.currentUser);
-        }
-      } catch (e) {
-        console.error('Cloud init error:', e);
-        updateSyncBadge('שמירה לא זמינה', false);
-      }
     }
 
     function formatNIS(num) {
@@ -1209,7 +797,6 @@
     function renderAll() {
       const m = computeMetrics();
 
-      // Scope header & KPIs
       document.getElementById('headerTitle').textContent = `ממשק פיננסי — חשבון ${state.scope}`;
       document.getElementById('kpiIncomeLabel').textContent = `הכנסה זמינה בחשבון ${state.scope} (חודשית)`;
       document.getElementById('kpiIncome').textContent = formatNIS(m.totalPersonalIncome);
@@ -1226,7 +813,6 @@
       document.getElementById('kpiNetWorth').textContent = formatNIS(m.netWorth);
       document.getElementById('kpiNetWorthSub').textContent = `עו"ש: ${formatNIS(m.checkingBalance)} • נזיל: ${formatNIS(m.liquid)}`;
 
-      // Breakdown
       document.getElementById('splitDisplay').textContent =
         `${state.sharedPct}% משותף / ${100 - state.sharedPct}% אישי`;
       document.getElementById('bdSalaryLabel').innerHTML = m.isPersonal
@@ -1650,7 +1236,9 @@
       });
     }
 
-    // Init inputs & listeners
+    // Boot & Listeners
+    loadFromLocalDevice();
+    checkPrivacyLockOnBoot();
     syncInputsFromState();
     document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
 
@@ -1690,7 +1278,6 @@
       const val = Number(e.target.value) || 0;
       if (!state.checkingBalances) state.checkingBalances = { 'אישי': 0, 'משותף': 0 };
       state.checkingBalances[state.scope] = val;
-      // Sync corresponding checking asset row if present
       const checkingAsset = state.assets.find(a => a.account === state.scope && a.type === 'נזיל' && a.name.includes('עו"ש'));
       if (checkingAsset) {
         checkingAsset.amount = val;
@@ -1726,7 +1313,6 @@
       showToast('יעד העו"ש נוסף בהצלחה');
     });
 
-    // Scope buttons
     function applyScopeUI() {
       const isP = state.scope === 'אישי';
       document.getElementById('scopePersonalBtn').className = isP
@@ -1759,7 +1345,6 @@
       renderAll();
     });
 
-    // Tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => {
@@ -1838,7 +1423,6 @@
       showToast('הנכס נוסף בהצלחה');
     });
 
-    // Simulator controls
     ['simMonthly', 'simInitial', 'simRate', 'simYears'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderSimulator);
     });
@@ -1849,7 +1433,6 @@
       showToast('הופקד המרווח החודשי הפנוי שלך בסימולטור');
     });
 
-    // CSV Export (UTF-8 BOM for clean Hebrew in Excel / Google Sheets)
     document.getElementById('exportCsvBtn').addEventListener('click', () => {
       const headers = ['תאריך', 'סוג תנועה', 'חשבון', 'קטגוריה', 'תיאור', 'סכום (₪)'];
       const rows = state.transactions.map(t =>
@@ -1863,10 +1446,9 @@
       a.download = 'transactions_export.csv';
       a.click();
       URL.revokeObjectURL(url);
-      showToast('קובץ CSV ירד למחשב (תואם לייבוא לגיליון)');
+      showToast('קובץ CSV ירד למכשיר');
     });
 
-    // CSV Import
     document.getElementById('csvImportInput').addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
@@ -1899,15 +1481,6 @@
       };
       reader.readAsText(file, 'UTF-8');
       e.target.value = '';
-    });
-
-    // Account, Auth & Household Modal Controls
-    document.getElementById('openAccountModalBtn').addEventListener('click', () => {
-      updateAccountModalUI();
-      document.getElementById('accountModal').classList.remove('hidden');
-    });
-    document.getElementById('closeAccountModalBtn').addEventListener('click', () => {
-      document.getElementById('accountModal').classList.add('hidden');
     });
 
     document.getElementById('installAppBtn').addEventListener('click', async () => {
@@ -1970,24 +1543,9 @@
       }
     });
 
-    document.querySelectorAll('#emailAuthForm button[data-auth-mode]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        activeAuthMode = btn.dataset.authMode;
-      });
-    });
-
-    document.getElementById('emailAuthForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!authInstance) {
-        showToast('שירות ההתחברות אינו זמין כרגע');
-        return;
-      }
-      const email = document.getElementById('authEmailInput').value.trim();
-      const password = document.getElementById('authPassInput').value;
-      const displayName = document.getElementById('authNameInput').value.trim();
-
-      try {
-        if (activeAuthMode === 'register') {
-          if (authInstance.currentUser && authInstance.currentUser.isAnonymous) {
-            const cred = EmailAuthProvider.credential(email, password);
-            const res = await linkWithCr
+    applyScopeUI();
+    renderAll();
+  </script>
+</body>
+</html>
+```
