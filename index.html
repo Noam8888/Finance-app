@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -9,8 +9,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ניהול הון" />
   <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2454/2454282.png" />
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2454/2454282.png" />
+  <link rel="icon" type="image/png" href="./icon.png" />
+  <link rel="apple-touch-icon" href="./icon.png" />
   <title>ממשק פיננסי אישי — תזרים, שווי נקי ומרווח השקעה</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -121,6 +121,9 @@
           </button>
           <button id="installAppBtn" type="button" class="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-600 transition shadow-sm">
             התקן בנייד
+          </button>
+          <button id="downloadIconBtn" type="button" class="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-slate-900 hover:bg-amber-400 transition shadow-sm">
+            הורד icon.png
           </button>
           <span id="cloudSyncBadge" class="rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-medium text-emerald-200">נשמר במכשיר 🔒</span>
           <label for="csvImportInput" class="cursor-pointer rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25 transition">
@@ -517,7 +520,7 @@
   </main>
 
   <script>
-    // Register real Service Worker file for Android Chrome installation
+    // Register Service Worker for full Offline + Installable WebAPK support
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -528,6 +531,33 @@
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
+    });
+
+    // Generate & download real 512x512 PNG icon for GitHub upload
+    document.getElementById('downloadIconBtn').addEventListener('click', () => {
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0f4c5c';
+      ctx.fillRect(0, 0, size, size);
+
+      ctx.fillStyle = '#10b981';
+      ctx.font = 'bold 280px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('₪', size / 2, size * 0.54);
+
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'icon.png';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('הקובץ icon.png ירד! העלה אותו לתיקייה ב-GitHub');
+      }, 'image/png');
     });
 
     const CATEGORIES = [
