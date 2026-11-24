@@ -1,0 +1,15 @@
+{
+  "name": "ממשק פיננסי — ניהול הון",
+  "short_name": "ניהול הון",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7f9",
+  "theme_color": "#0f4c5c",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2454/2454282.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
