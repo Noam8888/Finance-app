@@ -1,0 +1,2065 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f4c5c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="תזרים וניהול הון" />
+  <link id="pwaManifestLink" rel="manifest" href="./manifest.json" />
+  <title>ממשק פיננסי אישי — תזרים, שווי נקי ומרווח השקעה</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Heebo', system-ui, -apple-system, sans-serif;
+      background-color: #f4f7f9;
+      color: #0f172a;
+    }
+    .tab-btn.active {
+      background-color: #0f4c5c;
+      color: #ffffff;
+    }
+    .num-dir {
+      direction: ltr;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
+  <!-- Toast notification -->
+  <div id="toast" class="fixed bottom-5 left-5 z-50 hidden rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg transition-opacity"></div>
+
+  <!-- Privacy Lock Screen Overlay -->
+  <div id="privacyLockOverlay" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-[#0f4c5c] p-4">
+    <div class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl">
+      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0f4c5c]/10 text-2xl font-extrabold text-[#0f4c5c]">🔒</div>
+      <h2 id="lockScreenTitle" class="mt-4 text-xl font-extrabold text-slate-900">האפליקציה נעולה</h2>
+      <p id="lockScreenSubtitle" class="mt-1 text-xs text-slate-500">הזן את הקוד האישי שלך כדי לצפות בנתונים הפיננסיים</p>
+      <form id="privacyLockForm" class="mt-5 space-y-3">
+        <input id="privacyPinInput" type="password" inputmode="numeric" autocomplete="off" required minlength="4" maxlength="12" placeholder="••••" dir="ltr"
+          class="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-center text-2xl font-extrabold tracking-[0.5em] text-slate-900 focus:border-[#0f4c5c] focus:outline-none" />
+        <p id="lockErrorText" class="hidden text-xs font-bold text-rose-600">קוד שגוי, נסה שוב</p>
+        <button id="lockSubmitBtn" type="submit" class="w-full rounded-xl bg-[#0f4c5c] py-3 text-sm font-bold text-white hover:bg-[#1b6b7f] transition shadow-md">
+          פתח אפליקציה
+        </button>
+      </form>
+      <p class="mt-4 text-[11px] text-slate-400">הנתונים נשמרים באופן פרטי על המכשיר שלך בלבד</p>
+    </div>
+  </div>
+
+  <!-- Privacy & PIN Settings Modal -->
+  <div id="privacySettingsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h2 class="text-lg font-extrabold text-slate-900">פרטיות ונעילת קוד סודי (PIN)</h2>
+        <button id="closePrivacyModalBtn" type="button" class="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-100 text-lg font-bold">×</button>
+      </div>
+      <div class="mt-4 space-y-4 text-xs text-slate-600">
+        <div class="rounded-xl bg-emerald-50 p-3.5 border border-emerald-200 text-emerald-900">
+          <p class="font-bold">פרטיות מלאה במכשיר שלך:</p>
+          <p class="mt-1">כל המספרים והתנועות נשמרים מקומית בדפדפן/אפליקציה בטלפון שלך בלבד (ללא גישה לאף גורם חיצוני).</p>
+        </div>
+        <form id="setPinForm" class="space-y-2.5">
+          <label for="newPinInput" class="block font-bold text-slate-800">הגדרת / שינוי קוד נעילה אישי (4–12 ספרות):</label>
+          <input id="newPinInput" type="password" inputmode="numeric" minlength="4" maxlength="12" required placeholder="הזן קוד סודי חדש" dir="ltr"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-base font-bold tracking-widest focus:border-[#0f4c5c] focus:outline-none" />
+          <div class="flex gap-2">
+            <button type="submit" class="flex-1 rounded-lg bg-[#0f4c5c] py-2 font-bold text-white hover:bg-[#1b6b7f] transition">שמור קוד נעילה</button>
+            <button id="removePinBtn" type="button" class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-bold text-rose-700 hover:bg-rose-100 transition">בטל קוד</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account / Auth & Household Modal -->
+  <div id="accountModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h2 class="text-lg font-extrabold text-slate-900">משתמש וחיבור חשבון משותף</h2>
+        <button id="closeAccountModalBtn" type="button" class="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 text-lg font-bold">×</button>
+      </div>
+
+      <!-- Current User Status -->
+      <div class="mt-4 rounded-xl bg-slate-50 p-3.5 border border-slate-200">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-500">מצב חשבון נוכחי:</span>
+          <span id="modalAuthStatusBadge" class="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-800">חיבור אורח זמני</span>
+        </div>
+        <p id="modalUserEmail" class="mt-1 text-sm font-bold text-slate-800 break-all">לא מחובר עם אימייל</p>
+        <p class="mt-1 text-[11px] text-slate-500">מזהה משתמש: <span id="modalUserId" class="font-mono text-slate-700">—</span></p>
+      </div>
+
+      <!-- Login / Register Form (shown when anonymous) -->
+      <div id="authFormsSection" class="mt-4 space-y-3">
+        <p class="text-xs text-slate-600">צור חשבון אישי עם אימייל וסיסמה (או התחבר לחשבון קיים) כדי לגשת לנתונים מכל טלפון ולחבר בן/בת זוג:</p>
+        <form id="emailAuthForm" class="space-y-2.5">
+          <div>
+            <label for="authNameInput" class="block text-xs font-semibold text-slate-700">שם תצוגה (להרשמה)</label>
+            <input id="authNameInput" type="text" placeholder="למשל: נועם" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#0f4c5c] focus:outline-none" />
+          </div>
+          <div>
+            <label for="authEmailInput" class="block text-xs font-semibold text-slate-700">אימייל</label>
+            <input id="authEmailInput" type="email" required placeholder="name@example.com" dir="ltr" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-left focus:border-[#0f4c5c] focus:outline-none" />
+          </div>
+          <div>
+            <label for="authPassInput" class="block text-xs font-semibold text-slate-700">סיסמה (לפחות 6 תווים)</label>
+            <input id="authPassInput" type="password" required minlength="6" placeholder="••••••" dir="ltr" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-left focus:border-[#0f4c5c] focus:outline-none" />
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button type="submit" data-auth-mode="register" class="rounded-lg bg-[#0f4c5c] px-3 py-2 text-xs font-bold text-white hover:bg-[#1b6b7f] transition">הרשמה ושמירת נתונים</button>
+            <button type="submit" data-auth-mode="login" class="rounded-lg border border-[#0f4c5c] bg-white px-3 py-2 text-xs font-bold text-[#0f4c5c] hover:bg-slate-50 transition">התחברות לחשבון קיים</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Signed-in actions -->
+      <div id="signedInActionsSection" class="mt-3 hidden">
+        <button id="logoutBtn" type="button" class="w-full rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition">התנתק מהחשבון</button>
+      </div>
+
+      <!-- Shared Account / Household Linking Section -->
+      <div class="mt-5 border-t border-slate-200 pt-4">
+        <h3 class="text-sm font-extrabold text-slate-900">חיבור שני משתמשים לחשבון משותף</h3>
+        <p class="mt-1 text-xs text-slate-500">החשבון האישי שלך נשאר פרטי לחלוטין. החשבון המשותף מסונכרן בזמן אמת בין שניכם.</p>
+
+        <div class="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-900">קוד החשבון המשותף הפעיל:</span>
+            <button id="copySharedCodeBtn" type="button" class="rounded-md bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 transition">העתק קוד</button>
+          </div>
+          <p id="activeSharedCodeDisplay" class="mt-1.5 font-mono text-base font-extrabold tracking-wider text-emerald-800 select-all">—</p>
+          <p id="sharedMembersText" class="mt-1 text-[11px] text-emerald-800/80">שלח את הקוד הזה לבן/בת הזוג כדי שיצטרפו לאותו חשבון משותף.</p>
+        </div>
+
+        <form id="joinSharedForm" class="mt-3 flex gap-2">
+          <input id="joinSharedCodeInput" type="text" required placeholder="הדבק קוד הצטרפות..." dir="ltr" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-xs font-mono text-left uppercase focus:border-[#0f4c5c] focus:outline-none" />
+          <button type="submit" class="whitespace-nowrap rounded-lg bg-slate-800 px-3 py-2 text-xs font-bold text-white hover:bg-slate-900 transition">הצטרף לחשבון</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Install App Guide Modal -->
+  <div id="installModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h2 class="text-lg font-extrabold text-slate-900">התקנת האפליקציה בטלפון</h2>
+        <button id="closeInstallModalBtn" type="button" class="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-100 text-lg font-bold">×</button>
+      </div>
+      <div class="mt-4 space-y-3 text-xs text-slate-700 leading-relaxed">
+        <div class="rounded-xl bg-slate-50 p-3 border border-slate-200">
+          <p class="font-bold text-slate-900">במכשירי iPhone (Safari):</p>
+          <p class="mt-1">לחץ על כפתור השיתוף בתחתית המסך (ריבוע עם חץ למעלה) ובחר ב-<strong>"הוסף למסך הבית" (Add to Home Screen)</strong>.</p>
+        </div>
+        <div class="rounded-xl bg-slate-50 p-3 border border-slate-200">
+          <p class="font-bold text-slate-900">במכשירי Android (Chrome):</p>
+          <p class="mt-1">לחץ על תפריט שלוש הנקודות בפינה העליונה ובחר ב-<strong>"התקן אפליקציה" (Install App)</strong> או <strong>"הוסף למסך הבית"</strong>.</p>
+        </div>
+        <p class="text-[11px] text-slate-500">לאחר ההתקנה האפליקציה תיפתח במסך מלא כמו אפליקציה רגילה ותסתנכרן בענן.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Header -->
+  <header class="bg-[#0f4c5c] text-white shadow-md">
+    <div class="mx-auto max-w-6xl px-4 py-5 sm:px-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 id="headerTitle" class="text-xl font-bold sm:text-2xl">ממשק פיננסי — חשבון אישי</h1>
+            <span id="sharedLinkedPill" class="hidden rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-[11px] font-bold text-emerald-100 border border-emerald-300/30">משותף מחובר</span>
+          </div>
+          <p class="mt-1 text-sm text-slate-200">תזרים, חישוב מרווח השקעה ריאלי ושווי נקי — מעבר מהיר בין חשבון אישי למשותף</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex items-center rounded-lg bg-[#1b6b7f] p-1 text-xs font-semibold">
+            <button id="scopePersonalBtn" type="button" class="rounded-md bg-white px-3 py-1.5 text-[#0f4c5c] shadow-sm transition">חשבון אישי</button>
+            <button id="scopeSharedBtn" type="button" class="rounded-md px-3 py-1.5 text-white hover:bg-white/10 transition">חשבון משותף</button>
+          </div>
+          <button id="openAccountModalBtn" type="button" class="flex items-center gap-1.5 rounded-lg bg-amber-400 px-3 py-2 text-xs font-extrabold text-slate-900 hover:bg-amber-300 transition shadow-sm">
+            <span id="userHeaderBtnLabel">התחבר / חבר בן זוג</span>
+          </button>
+          <button id="privacySettingsBtn" type="button" class="rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25 transition">
+            🔒 נעילה ופרטיות
+          </button>
+          <button id="lockNowBtn" type="button" class="hidden rounded-lg bg-rose-500/80 px-2.5 py-2 text-xs font-bold text-white hover:bg-rose-600 transition">
+            נעל כעת
+          </button>
+          <button id="installAppBtn" type="button" class="rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25 transition">
+            התקן בנייד
+          </button>
+          <span id="cloudSyncBadge" class="rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-medium text-emerald-200">מתחבר לשמירה...</span>
+          <label for="csvImportInput" class="cursor-pointer rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25 transition">
+            ייבוא CSV
+          </label>
+          <input id="csvImportInput" type="file" accept=".csv" class="hidden" />
+          <button id="exportCsvBtn" type="button" class="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-600 transition">
+            ייצוא CSV לגיליון
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto mt-6 max-w-6xl px-4 sm:px-6">
+    <!-- KPI Row -->
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <p id="kpiIncomeLabel" class="text-xs font-semibold text-slate-500">הכנסה זמינה בחשבון (חודשית)</p>
+        <p id="kpiIncome" class="mt-2 text-2xl font-extrabold text-[#0f4c5c]">0 ₪</p>
+        <p id="kpiIncomeSub" class="mt-1 text-xs text-slate-500">20% מהמשכורת + קצבה 1,000 ₪</p>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500">הוצאות שוטפות החודש</p>
+        <p id="kpiExpenses" class="mt-2 text-2xl font-extrabold text-rose-600">0 ₪</p>
+        <p id="kpiExpensesSub" class="mt-1 text-xs text-slate-500">קבועות + משתנות (מיומן התנועות)</p>
+      </div>
+      <div class="rounded-2xl border-2 border-emerald-500/40 bg-emerald-50/50 p-4 shadow-sm">
+        <p class="text-xs font-bold text-emerald-800">מרווח פנוי להשקעה החודש</p>
+        <p id="kpiMargin" class="mt-2 text-2xl font-extrabold text-emerald-700">1,000 ₪</p>
+        <p id="kpiMarginSub" class="mt-1 text-xs text-emerald-700/80">1,000 ₪ קצבה מוקצית + עודף תזרימי</p>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500">שווי נקי נוכחי</p>
+        <p id="kpiNetWorth" class="mt-2 text-2xl font-extrabold text-slate-900">0 ₪</p>
+        <p id="kpiNetWorthSub" class="mt-1 text-xs text-slate-500">נזיל: 0 ₪</p>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="mt-6 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+      <button type="button" data-tab="overview" class="tab-btn active rounded-lg px-4 py-2 text-sm font-semibold transition">תמונה מלאה ומרווח השקעה</button>
+      <button type="button" data-tab="transactions" class="tab-btn rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">יומן תנועות</button>
+      <button type="button" data-tab="networth" class="tab-btn rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">נכסים ונזילות</button>
+      <button type="button" data-tab="simulator" class="tab-btn rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">סימולטור צמיחת השקעות</button>
+    </nav>
+
+    <!-- TAB 1: OVERVIEW -->
+    <section id="tab-overview" class="tab-panel mt-6 space-y-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <!-- Left/Right Col 1: Income & Margin Config -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-5">
+          <h2 class="text-base font-bold text-slate-900">הגדרות הכנסה וחלוקה (חודשי)</h2>
+          <p class="mt-1 text-xs text-slate-500">עדכן את הנתונים הקבועים שלך לחישוב מיידי של המרווח הפנוי להשקעה.</p>
+
+          <div class="mt-4 space-y-4">
+            <div>
+              <label id="salaryInputLabel" for="salaryInput" class="block text-xs font-semibold text-slate-700">משכורת / מלגה חודשית נטו (₪)</label>
+              <input id="salaryInput" type="number" min="0" step="100" placeholder="הזן סכום (למשל 5000)" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#0f4c5c] focus:outline-none" />
+            </div>
+
+            <div id="partnerSalaryWrapper" class="hidden">
+              <label for="partnerSalaryInput" class="block text-xs font-semibold text-slate-700">משכורת 2 נטו החודש — 80% למשותף (₪)</label>
+              <input id="partnerSalaryInput" type="number" min="0" step="100" placeholder="הזן סכום משכורת 2" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#0f4c5c] focus:outline-none" />
+            </div>
+
+            <div>
+              <label for="extraMonthlyIncomeInput" class="block text-xs font-semibold text-slate-700">הכנסות נוספות חודשיות — אופציונלי (₪)</label>
+              <input id="extraMonthlyIncomeInput" type="number" min="0" step="50" placeholder="למשל: פרילנס / שכר דירה / קצבה (0)" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#0f4c5c] focus:outline-none" />
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between">
+                <label for="sharedPctInput" class="text-xs font-semibold text-slate-700">הפרשה לחשבון המשותף</label>
+                <span id="splitDisplay" class="text-xs font-bold text-[#0f4c5c]">80% משותף / 20% אישי</span>
+              </div>
+              <input id="sharedPctInput" type="range" min="0" max="100" value="80" class="mt-2 w-full accent-[#0f4c5c]" />
+            </div>
+
+            <div id="stipendGoalsGrid" class="grid grid-cols-2 gap-3">
+              <div id="stipendInputWrapper">
+                <label for="stipendInput" class="block text-xs font-semibold text-slate-700">קצבה קבועה להשקעה (₪)</label>
+                <input id="stipendInput" type="number" min="0" step="50" value="1000" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#0f4c5c] focus:outline-none" />
+              </div>
+              <div>
+                <label for="goalsAllocInput" class="block text-xs font-semibold text-slate-700">הפרשה כללית לבלת"מ (₪)</label>
+                <input id="goalsAllocInput" type="number" min="0" step="50" value="0" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#0f4c5c] focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Checking Account (מצב עו"ש) & Checking Goals Card -->
+          <div class="mt-6 rounded-xl border border-sky-200 bg-sky-50/50 p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 id="checkingTitle" class="text-sm font-bold text-slate-900">מצב עו"ש ויעדים בעו"ש (חשבון אישי)</h3>
+                <p class="text-[11px] text-slate-500">עדכן יתרה נוכחית והגדר יעדים לשמירת כסף בעו"ש מדי חודש.</p>
+              </div>
+              <span id="checkingFreeBadge" class="rounded-lg bg-sky-100 px-2.5 py-1 text-xs font-bold text-sky-900">פנוי בעו"ש: 0 ₪</span>
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="rounded-lg border border-slate-200 bg-white p-2.5">
+                <label for="checkingBalanceInput" class="block text-[11px] font-semibold text-slate-600">יתרת עו"ש נוכחית (₪)</label>
+                <input id="checkingBalanceInput" type="number" step="100" placeholder="0" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-sm font-bold text-[#0f4c5c] focus:border-[#0f4c5c] focus:outline-none" />
+              </div>
+              <div class="rounded-lg border border-slate-200 bg-white p-2.5 flex flex-col justify-between">
+                <span class="text-[11px] font-semibold text-slate-600">הפרשה חודשית ליעדי עו"ש</span>
+                <span id="checkingMonthlyGoalsTotal" class="mt-1 text-sm font-extrabold text-amber-700">0 ₪ / חודש</span>
+              </div>
+            </div>
+
+            <div id="checkingGoalsList" class="mt-3 space-y-2"></div>
+
+            <form id="addCheckingGoalForm" class="mt-3 grid grid-cols-1 gap-1.5 border-t border-sky-200/70 pt-3 sm:grid-cols-12">
+              <input id="newCGoalName" type="text" placeholder="שם יעד בעו&quot;ש (למשל: חופשה / טסט)" required class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs sm:col-span-5" />
+              <input id="newCGoalTarget" type="number" min="0" step="100" placeholder="יעד (₪)" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs sm:col-span-3" />
+              <input id="newCGoalMonthly" type="number" min="0" step="50" placeholder="חודשי (₪)" required class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs sm:col-span-2" />
+              <button type="submit" class="rounded-lg bg-[#0f4c5c] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#1b6b7f] sm:col-span-2">הוסף</button>
+            </form>
+          </div>
+
+          <!-- Margin Breakdown Table -->
+          <div class="mt-6 rounded-xl bg-slate-50 p-4 border border-slate-200">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wide">פירוט חישוב מרווח ההשקעה</h3>
+            <dl class="mt-3 space-y-2 text-sm">
+              <div class="flex justify-between">
+                <dt id="bdSalaryLabel" class="text-slate-600">חלק אישי ממשכורת/מלגה (<span id="personalPctLbl">20%</span>):</dt>
+                <dd id="bdSalaryPersonal" class="font-semibold text-slate-900">0 ₪</dd>
+              </div>
+              <div id="bdPartnerSalaryRow" class="hidden flex justify-between">
+                <dt class="text-slate-600">חלק משותף ממשכורת 2 (<span id="partnerPctLbl">80%</span>):</dt>
+                <dd id="bdPartnerSalary" class="font-semibold text-slate-900">0 ₪</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt id="bdExtraLabel" class="text-slate-600">הכנסות נוספות (חודשיות + יומן):</dt>
+                <dd id="bdExtraIncome" class="font-semibold text-slate-900">0 ₪</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-slate-600">פחות הוצאות שוטפות קבועות:</dt>
+                <dd id="bdFixedExpenses" class="font-semibold text-rose-600">0 ₪</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-slate-600">פחות הוצאות משתנות (יומן):</dt>
+                <dd id="bdVarExpenses" class="font-semibold text-rose-600">0 ₪</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-slate-600">פחות יעדי עו"ש ובלת"מ חודשי:</dt>
+                <dd id="bdGoals" class="font-semibold text-amber-700">0 ₪</dd>
+              </div>
+              <div class="flex justify-between border-t border-slate-200 pt-2">
+                <dt class="font-semibold text-slate-700">עודף/גירעון תזרימי שוטף:</dt>
+                <dd id="bdCashflowSurplus" class="font-bold text-slate-900">0 ₪</dd>
+              </div>
+              <div id="bdStipendRow" class="flex justify-between">
+                <dt class="font-semibold text-emerald-700">ועוד קצבה קבועה מוקצית להשקעה:</dt>
+                <dd id="bdStipend" class="font-bold text-emerald-700">1,000 ₪</dd>
+              </div>
+              <div class="flex justify-between border-t-2 border-emerald-500/30 pt-2 text-base">
+                <dt class="font-extrabold text-emerald-900">סה"כ מרווח פנוי להשקעה:</dt>
+                <dd id="bdTotalMargin" class="font-extrabold text-emerald-700">1,000 ₪</dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Fixed Recurring Expenses Editor -->
+          <div class="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 id="fixedExpTitle" class="text-sm font-bold text-slate-900">הוצאות שוטפות קבועות (חשבון אישי)</h3>
+                <p class="text-[11px] text-slate-500">שנה סכומים ישירות; הוצאה דו-חודשית מתחלקת אוטומטית ב-2 לחודש.</p>
+              </div>
+              <span id="fixedExpTotalBadge" class="rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700">0 ₪ / חודש</span>
+            </div>
+
+            <div id="fixedExpensesList" class="mt-3 space-y-2 max-h-80 overflow-y-auto pl-1"></div>
+
+            <form id="addFixedExpForm" class="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+              <input id="newFixedName" type="text" placeholder="הוצאה חדשה..." required class="flex-1 min-w-[120px] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs" />
+              <select id="newFixedFreq" class="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
+                <option value="חודשי">חודשי</option>
+                <option value="דו-חודשי">דו-חודשי (÷2)</option>
+              </select>
+              <input id="newFixedAmt" type="number" min="0" step="10" placeholder="₪" required class="w-20 rounded-lg border border-slate-300 px-2 py-1.5 text-xs" />
+              <button type="submit" class="rounded-lg bg-[#0f4c5c] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1b6b7f]">הוסף</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Col 2: Charts -->
+        <div class="space-y-6 lg:col-span-7">
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <h2 class="text-base font-bold text-slate-900">התפלגות הוצאות מול תקציב יעד</h2>
+              <button id="editBudgetsToggleBtn" type="button" class="text-xs font-semibold text-[#0f4c5c] hover:underline">ערוך תקציבי יעד</button>
+            </div>
+            <div id="budgetEditorPanel" class="mt-3 hidden rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div id="budgetInputsGrid" class="grid grid-cols-2 gap-2 sm:grid-cols-3"></div>
+            </div>
+            <div class="relative mt-4 h-72">
+              <canvas id="expensesChart"></canvas>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-base font-bold text-slate-900">חלוקת הכנסה כוללת (משותף מול אישי והשקעה)</h2>
+            <div class="relative mt-4 h-60">
+              <canvas id="allocationChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: TRANSACTIONS -->
+    <section id="tab-transactions" class="tab-panel mt-6 hidden space-y-6">
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 class="text-base font-bold text-slate-900">הוספת תנועה חדשה</h2>
+        <form id="txForm" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <div>
+            <label for="txDate" class="block text-xs font-semibold text-slate-600">תאריך</label>
+            <input id="txDate" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm" />
+          </div>
+          <div>
+            <label for="txType" class="block text-xs font-semibold text-slate-600">סוג</label>
+            <select id="txType" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm">
+              <option value="הוצאה">הוצאה</option>
+              <option value="הכנסה">הכנסה</option>
+              <option value="השקעה">השקעה</option>
+              <option value="הפרשה ליעד">הפרשה ליעד</option>
+            </select>
+          </div>
+          <div>
+            <label for="txAccount" class="block text-xs font-semibold text-slate-600">חשבון</label>
+            <select id="txAccount" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm">
+              <option value="אישי">אישי</option>
+              <option value="משותף">משותף</option>
+            </select>
+          </div>
+          <div>
+            <label for="txCategory" class="block text-xs font-semibold text-slate-600">קטגוריה</label>
+            <select id="txCategory" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm">
+              <option value="מזון וסופר">מזון וסופר</option>
+              <option value="אוכל בחוץ ובילויים">אוכל בחוץ ובילויים</option>
+              <option value="תחבורה וניידות">תחבורה וניידות</option>
+              <option value="ספורט ובריאות">ספורט ובריאות</option>
+              <option value="קניות וציוד אישי">קניות וציוד אישי</option>
+              <option value="מנויים ושירותים">מנויים ושירותים</option>
+              <option value="שונות">שונות</option>
+              <option value="הכנסה שוטפת">הכנסה שוטפת</option>
+              <option value="קצבה להשקעה">קצבה להשקעה</option>
+              <option value="יעד קצר טווח">יעד קצר טווח</option>
+            </select>
+          </div>
+          <div>
+            <label for="txAmount" class="block text-xs font-semibold text-slate-600">סכום (₪)</label>
+            <input id="txAmount" type="number" min="1" step="1" required placeholder="120" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm" />
+          </div>
+          <div class="flex flex-col justify-end">
+            <button type="submit" class="w-full rounded-lg bg-[#0f4c5c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1b6b7f] transition">הוסף תנועה</button>
+          </div>
+          <div class="sm:col-span-2 lg:col-span-6">
+            <input id="txDesc" type="text" placeholder="תיאור קצר (אופציונלי, למשל: סופר שבועי / קפה)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        </form>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-base font-bold text-slate-900">היסטוריית תנועות</h2>
+          <div class="flex items-center gap-2">
+            <select id="filterType" class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs">
+              <option value="ALL">כל הסוגים</option>
+              <option value="הוצאה">הוצאות</option>
+              <option value="הכנסה">הכנסות</option>
+              <option value="השקעה">השקעות</option>
+              <option value="הפרשה ליעד">הפרשה ליעד</option>
+            </select>
+            <button id="clearDemoBtn" type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100">נקה הכל</button>
+          </div>
+        </div>
+
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-right text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs font-bold text-slate-500">
+                <th class="pb-2 pr-2">תאריך</th>
+                <th class="pb-2">סוג</th>
+                <th class="pb-2">חשבון</th>
+                <th class="pb-2">קטגוריה</th>
+                <th class="pb-2">תיאור</th>
+                <th class="pb-2">סכום</th>
+                <th class="pb-2 pl-2 text-left">פעולה</th>
+              </tr>
+            </thead>
+            <tbody id="txTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: NET WORTH -->
+    <section id="tab-networth" class="tab-panel mt-6 hidden space-y-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-7">
+          <h2 class="text-base font-bold text-slate-900">נכסים והתחייבויות</h2>
+          <p class="mt-1 text-xs text-slate-500">עדכן את היתרות הנוכחיות שלך כדי לקבל תמונת נזילות ושווי נקי מלאה.</p>
+          <div id="assetsList" class="mt-4 space-y-3"></div>
+
+          <form id="addAssetForm" class="mt-5 grid grid-cols-1 gap-2 border-t border-slate-200 pt-4 sm:grid-cols-4">
+            <input id="newAssetName" type="text" placeholder="שם נכס / חשבון" required class="rounded-lg border border-slate-300 px-2.5 py-2 text-sm" />
+            <select id="newAssetType" class="rounded-lg border border-slate-300 px-2.5 py-2 text-sm">
+              <option value="נזיל">נכס נזיל</option>
+              <option value="השקעות">השקעות סחירות</option>
+              <option value="ארוך טווח">טווח בינוני/ארוך</option>
+              <option value="התחייבות">התחייבות</option>
+            </select>
+            <input id="newAssetAmount" type="number" placeholder="יתרה (₪)" required class="rounded-lg border border-slate-300 px-2.5 py-2 text-sm" />
+            <button type="submit" class="rounded-lg bg-[#0f4c5c] px-3 py-2 text-sm font-semibold text-white hover:bg-[#1b6b7f]">הוסף שורה</button>
+          </form>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-5">
+          <h2 class="text-base font-bold text-slate-900">חוסן פיננסי ונזילות</h2>
+          <div class="mt-4 space-y-4">
+            <div class="rounded-xl bg-slate-50 p-4 border border-slate-200">
+              <p class="text-xs font-semibold text-slate-500">סה"כ נכסים נזילים מיידית</p>
+              <p id="nwLiquidTotal" class="mt-1 text-xl font-extrabold text-[#0f4c5c]">0 ₪</p>
+            </div>
+            <div class="rounded-xl bg-slate-50 p-4 border border-slate-200">
+              <p class="text-xs font-semibold text-slate-500">השקעות סחירות + חיסכון ארוך טווח</p>
+              <p id="nwInvestedTotal" class="mt-1 text-xl font-extrabold text-slate-900">0 ₪</p>
+            </div>
+            <div class="rounded-xl bg-amber-50/70 p-4 border border-amber-200">
+              <p class="text-xs font-semibold text-amber-900">כיסוי קרן חירום (בחודשי הוצאה נוכחיים)</p>
+              <p id="nwEmergencyMonths" class="mt-1 text-xl font-extrabold text-amber-800">—</p>
+              <p class="mt-1 text-xs text-amber-800/80">מחושב לפי הנכסים הנזילים חלקי ההוצאות החודשיות</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: INVESTMENT SIMULATOR -->
+    <section id="tab-simulator" class="tab-panel mt-6 hidden">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-4">
+          <h2 class="text-base font-bold text-slate-900">סימולטור צמיחת הון</h2>
+          <p class="mt-1 text-xs text-slate-500">בדוק לאן תגיע ההשקעה החודשית שלך לאורך זמן.</p>
+
+          <div class="mt-4 space-y-4">
+            <div>
+              <label for="simMonthly" class="block text-xs font-semibold text-slate-700">הפקדה חודשית להשקעה (₪)</label>
+              <div class="mt-1 flex gap-2">
+                <input id="simMonthly" type="number" min="0" step="100" value="1000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <button id="syncMarginBtn" type="button" class="whitespace-nowrap rounded-lg bg-emerald-100 px-2.5 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-200">קח מהמרווח שלי</button>
+              </div>
+            </div>
+            <div>
+              <label for="simInitial" class="block text-xs font-semibold text-slate-700">סכום התחלתי קיים (₪)</label>
+              <input id="simInitial" type="number" min="0" step="500" value="0" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <div class="flex justify-between">
+                <label for="simRate" class="text-xs font-semibold text-slate-700">תשואה שנתית משוערת</label>
+                <span id="simRateLbl" class="text-xs font-bold text-[#0f4c5c]">7.0%</span>
+              </div>
+              <input id="simRate" type="range" min="1" max="12" step="0.5" value="7" class="mt-2 w-full accent-[#0f4c5c]" />
+            </div>
+            <div>
+              <div class="flex justify-between">
+                <label for="simYears" class="text-xs font-semibold text-slate-700">אופק השקעה (שנים)</label>
+                <span id="simYearsLbl" class="text-xs font-bold text-[#0f4c5c]">10 שנים</span>
+              </div>
+              <input id="simYears" type="range" min="1" max="30" step="1" value="10" class="mt-2 w-full accent-[#0f4c5c]" />
+            </div>
+          </div>
+
+          <div class="mt-6 rounded-xl bg-emerald-50 p-4 border border-emerald-200">
+            <p class="text-xs font-semibold text-emerald-900">שווי צפוי בתום התקופה</p>
+            <p id="simTotalValue" class="mt-1 text-2xl font-extrabold text-emerald-700">0 ₪</p>
+            <p id="simBreakdown" class="mt-1 text-xs text-emerald-800">הפקדות: 0 ₪ | רווח ריבית דריבית: 0 ₪</p>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-8">
+          <h2 class="text-base font-bold text-slate-900">תחזית צמיחת תיק ההשקעות</h2>
+          <div class="relative mt-4 h-80">
+            <canvas id="simChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getAuth,
+      signInAnonymously,
+      signInWithCustomToken,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      EmailAuthProvider,
+      linkWithCredential,
+      updateProfile,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Dynamic PWA icon setup for mobile installation
+    (function setupPWA() {
+      try {
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#0f4c5c"/><text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="260" fill="#10b981">₪</text></svg>`;
+        const iconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgIcon);
+        const appleIcon = document.createElement('link');
+        appleIcon.rel = 'apple-touch-icon';
+        appleIcon.href = iconUrl;
+        document.head.appendChild(appleIcon);
+      } catch (e) {}
+    })();
+
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+    });
+
+    const CATEGORIES = [
+      'מזון וסופר',
+      'אוכל בחוץ ובילויים',
+      'תחבורה וניידות',
+      'ספורט ובריאות',
+      'קניות וציוד אישי',
+      'מנויים ושירותים',
+      'שונות'
+    ];
+
+    const DEFAULT_STATE = {
+      scope: 'אישי',
+      salary: 0,
+      partnerSalary: 0,
+      extraMonthlyIncome: {
+        'אישי': 0,
+        'משותף': 0
+      },
+      sharedPct: 80,
+      stipend: 1000,
+      goalsAlloc: 0,
+      budgets: {
+        'מזון וסופר': 0,
+        'אוכל בחוץ ובילויים': 0,
+        'תחבורה וניידות': 0,
+        'ספורט ובריאות': 0,
+        'קניות וציוד אישי': 0,
+        'מנויים ושירותים': 0,
+        'שונות': 0
+      },
+      transactions: [
+        {
+          id: 'tx_1',
+          date: new Date().toISOString().slice(0, 10),
+          type: 'השקעה',
+          account: 'אישי',
+          category: 'קצבה להשקעה',
+          desc: 'הפרשה קבועה מהקצבה החודשית',
+          amount: 1000
+        }
+      ],
+      fixedExpenses: [
+        // משותף
+        { id: 'fx_s1', account: 'משותף', name: 'שכירות', freq: 'חודשי', amount: 0 },
+        { id: 'fx_s2', account: 'משותף', name: 'חשבון חשמל', freq: 'דו-חודשי', amount: 0 },
+        { id: 'fx_s3', account: 'משותף', name: 'חשבון מים', freq: 'חודשי', amount: 0 },
+        { id: 'fx_s4', account: 'משותף', name: 'חשבון גז', freq: 'חודשי', amount: 0 },
+        { id: 'fx_s5', account: 'משותף', name: 'ארנונה', freq: 'דו-חודשי', amount: 0 },
+        { id: 'fx_s6', account: 'משותף', name: 'אינטרנט', freq: 'חודשי', amount: 0 },
+        { id: 'fx_s7', account: 'משותף', name: 'דלק', freq: 'חודשי', amount: 0 },
+        { id: 'fx_s8', account: 'משותף', name: 'ביטוח רכב', freq: 'חודשי', amount: 0 },
+        // אישי
+        { id: 'fx_p1', account: 'אישי', name: 'טלפון', freq: 'חודשי', amount: 0 },
+        { id: 'fx_p2', account: 'אישי', name: 'כרטיס כלל', freq: 'חודשי', amount: 0 },
+        { id: 'fx_p3', account: 'אישי', name: 'קופת חולים', freq: 'חודשי', amount: 0 },
+        { id: 'fx_p4', account: 'אישי', name: 'נסיעות בתחבורה ציבורית', freq: 'חודשי', amount: 0 }
+      ],
+      assets: [
+        { id: 'a1', name: 'עו"ש חשבון אישי', type: 'נזיל', account: 'אישי', amount: 0 },
+        { id: 'a2', name: 'קרן חירום / פיקדון', type: 'נזיל', account: 'אישי', amount: 0 },
+        { id: 'a3', name: 'תיק השקעות עצמאי', type: 'השקעות', account: 'אישי', amount: 0 },
+        { id: 'a4', name: 'קרן השתלמות', type: 'ארוך טווח', account: 'אישי', amount: 0 },
+        { id: 'a5', name: 'קופת גמל / פנסיה', type: 'ארוך טווח', account: 'אישי', amount: 0 },
+        { id: 'a_s1', name: 'עו"ש חשבון משותף', type: 'נזיל', account: 'משותף', amount: 0 }
+      ],
+      checkingBalances: {
+        'אישי': 0,
+        'משותף': 0
+      },
+      checkingGoals: [
+        { id: 'cg_1', account: 'אישי', name: 'כרית ביטחון בעו"ש', target: 5000, saved: 0, monthly: 0 },
+        { id: 'cg_2', account: 'משותף', name: 'רזרבה להוצאות בלתי צפויות', target: 10000, saved: 0, monthly: 0 }
+      ],
+      sharedGroupId: null
+    };
+
+    let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    let expensesChart = null;
+    let allocationChart = null;
+    let simChart = null;
+
+    // Cloud persistence & multi-user state
+    let appInstance = null;
+    let authInstance = null;
+    let db = null;
+    let currentAppId = 'default-app-id';
+    let currentUser = null;
+    let personalDocRef = null;
+    let sharedDocRef = null;
+    let unsubscribePersonal = null;
+    let unsubscribeShared = null;
+    let saveTimeout = null;
+    let isApplyingRemote = false;
+    let activeAuthMode = 'register';
+
+    const LOCAL_STORAGE_KEY = 'private_finance_app_data_v1';
+    const LOCAL_PIN_KEY = 'private_finance_app_pin_hash_v1';
+
+    async function hashPin(pin) {
+      try {
+        const msgBuffer = new TextEncoder().encode('fin_salt_' + pin);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      } catch (e) {
+        return btoa('fin_salt_' + pin);
+      }
+    }
+
+    function saveToLocalDevice() {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function loadFromLocalDevice() {
+      try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (raw) {
+          state = mergeWithDefault(JSON.parse(raw));
+          syncInputsFromState();
+          applyScopeUI();
+          renderAll();
+          updateSyncBadge('נשמר במכשיר באופן פרטי 🔒', true);
+        }
+      } catch (e) {}
+    }
+
+    function checkPrivacyLockOnBoot() {
+      const savedHash = localStorage.getItem(LOCAL_PIN_KEY);
+      const lockNowBtn = document.getElementById('lockNowBtn');
+      if (savedHash) {
+        lockNowBtn.classList.remove('hidden');
+        document.getElementById('privacyLockOverlay').classList.remove('hidden');
+        setTimeout(() => document.getElementById('privacyPinInput').focus(), 100);
+      } else {
+        lockNowBtn.classList.add('hidden');
+      }
+    }
+
+    function generateGroupCode(uid) {
+      const base = (uid || Math.random().toString(36).slice(2)).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      return 'FAM-' + base.slice(0, 6).padEnd(6, 'X');
+    }
+
+    function extractPersonalSlice(fullState) {
+      return {
+        scope: fullState.scope,
+        salary: fullState.salary,
+        extraMonthlyIncomePersonal: (fullState.extraMonthlyIncome && fullState.extraMonthlyIncome['אישי']) || 0,
+        sharedPct: fullState.sharedPct,
+        stipend: fullState.stipend,
+        goalsAlloc: fullState.goalsAlloc,
+        budgets: fullState.budgets,
+        transactions: fullState.transactions.filter(t => t.account === 'אישי'),
+        fixedExpenses: fullState.fixedExpenses.filter(f => f.account === 'אישי'),
+        assets: fullState.assets.filter(a => a.account === 'אישי'),
+        checkingBalancePersonal: (fullState.checkingBalances && fullState.checkingBalances['אישי']) || 0,
+        checkingGoals: (fullState.checkingGoals || []).filter(g => g.account === 'אישי'),
+        sharedGroupId: fullState.sharedGroupId
+      };
+    }
+
+    function extractSharedSlice(fullState) {
+      return {
+        partnerSalary: fullState.partnerSalary,
+        primarySalaryForShared: fullState.salary,
+        extraMonthlyIncomeShared: (fullState.extraMonthlyIncome && fullState.extraMonthlyIncome['משותף']) || 0,
+        sharedPct: fullState.sharedPct,
+        transactions: fullState.transactions.filter(t => t.account === 'משותף'),
+        fixedExpenses: fullState.fixedExpenses.filter(f => f.account === 'משותף'),
+        assets: fullState.assets.filter(a => a.account === 'משותף'),
+        checkingBalanceShared: (fullState.checkingBalances && fullState.checkingBalances['משותף']) || 0,
+        checkingGoals: (fullState.checkingGoals || []).filter(g => g.account === 'משותף')
+      };
+    }
+
+    function applySharedSliceToState(sharedData) {
+      if (!sharedData) return;
+      if (typeof sharedData.partnerSalary === 'number') state.partnerSalary = sharedData.partnerSalary;
+      if (!state.extraMonthlyIncome) state.extraMonthlyIncome = { 'אישי': 0, 'משותף': 0 };
+      if (typeof sharedData.extraMonthlyIncomeShared === 'number') {
+        state.extraMonthlyIncome['משותף'] = sharedData.extraMonthlyIncomeShared;
+      }
+
+      const personalTxs = state.transactions.filter(t => t.account !== 'משותף');
+      const sharedTxs = Array.isArray(sharedData.transactions) ? sharedData.transactions : [];
+      state.transactions = [...personalTxs, ...sharedTxs];
+
+      const personalFixed = state.fixedExpenses.filter(f => f.account !== 'משותף');
+      const sharedFixed = Array.isArray(sharedData.fixedExpenses) ? sharedData.fixedExpenses : [];
+      state.fixedExpenses = [...personalFixed, ...sharedFixed];
+
+      const personalAssets = state.assets.filter(a => a.account !== 'משותף');
+      const sharedAssets = Array.isArray(sharedData.assets) ? sharedData.assets : [];
+      state.assets = [...personalAssets, ...sharedAssets];
+
+      if (!state.checkingBalances) state.checkingBalances = { 'אישי': 0, 'משותף': 0 };
+      if (typeof sharedData.checkingBalanceShared === 'number') {
+        state.checkingBalances['משותף'] = sharedData.checkingBalanceShared;
+      }
+
+      const personalCGoals = (state.checkingGoals || []).filter(g => g.account !== 'משותף');
+      const sharedCGoals = Array.isArray(sharedData.checkingGoals) ? sharedData.checkingGoals : [];
+      state.checkingGoals = [...personalCGoals, ...sharedCGoals];
+    }
+
+    function updateAccountModalUI() {
+      const isAnon = !currentUser || currentUser.isAnonymous;
+      const statusBadge = document.getElementById('modalAuthStatusBadge');
+      const emailEl = document.getElementById('modalUserEmail');
+      const uidEl = document.getElementById('modalUserId');
+      const authForms = document.getElementById('authFormsSection');
+      const signedInSec = document.getElementById('signedInActionsSection');
+      const headerBtnLabel = document.getElementById('userHeaderBtnLabel');
+      const codeDisplay = document.getElementById('activeSharedCodeDisplay');
+      const linkedPill = document.getElementById('sharedLinkedPill');
+
+      uidEl.textContent = currentUser ? currentUser.uid : '—';
+      codeDisplay.textContent = state.sharedGroupId || '—';
+      if (state.sharedGroupId) {
+        linkedPill.classList.remove('hidden');
+        linkedPill.textContent = `משותף: ${state.sharedGroupId}`;
+      }
+
+      if (isAnon) {
+        statusBadge.textContent = 'חיבור אורח זמני';
+        statusBadge.className = 'rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-800';
+        emailEl.textContent = 'אורח (התחבר עם אימייל כדי לגשת מכל מכשיר)';
+        authForms.classList.remove('hidden');
+        signedInSec.classList.add('hidden');
+        headerBtnLabel.textContent = 'התחבר / חבר בן זוג';
+      } else {
+        statusBadge.textContent = 'חשבון מאומת בענן ✓';
+        statusBadge.className = 'rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800';
+        emailEl.textContent = (currentUser.displayName ? `${currentUser.displayName} • ` : '') + (currentUser.email || '');
+        authForms.classList.add('hidden');
+        signedInSec.classList.remove('hidden');
+        headerBtnLabel.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+      }
+    }
+
+    function updateSyncBadge(text, isReady = true) {
+      const badge = document.getElementById('cloudSyncBadge');
+      if (!badge) return;
+      badge.textContent = text;
+      badge.className = isReady
+        ? 'rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-100'
+        : 'rounded-lg bg-amber-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-amber-100';
+    }
+
+    function mergeWithDefault(parsed) {
+      if (!parsed) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      if (parsed.scope === 'הכל') parsed.scope = 'משותף';
+      return {
+        ...JSON.parse(JSON.stringify(DEFAULT_STATE)),
+        ...parsed,
+        extraMonthlyIncome: {
+          ...DEFAULT_STATE.extraMonthlyIncome,
+          ...(parsed.extraMonthlyIncome || {})
+        },
+        budgets: {
+          ...DEFAULT_STATE.budgets,
+          ...(parsed.budgets || {})
+        },
+        transactions: Array.isArray(parsed.transactions) ? parsed.transactions : JSON.parse(JSON.stringify(DEFAULT_STATE.transactions)),
+        fixedExpenses: Array.isArray(parsed.fixedExpenses) && parsed.fixedExpenses.length > 0
+          ? parsed.fixedExpenses
+          : JSON.parse(JSON.stringify(DEFAULT_STATE.fixedExpenses)),
+        assets: Array.isArray(parsed.assets) ? parsed.assets : JSON.parse(JSON.stringify(DEFAULT_STATE.assets)),
+        checkingBalances: {
+          ...DEFAULT_STATE.checkingBalances,
+          ...(parsed.checkingBalances || {})
+        },
+        checkingGoals: Array.isArray(parsed.checkingGoals)
+          ? parsed.checkingGoals
+          : JSON.parse(JSON.stringify(DEFAULT_STATE.checkingGoals)),
+        sharedGroupId: parsed.sharedGroupId || null
+      };
+    }
+
+    function syncInputsFromState() {
+      document.getElementById('salaryInput').value = state.salary || '';
+      document.getElementById('partnerSalaryInput').value = state.partnerSalary || '';
+      document.getElementById('extraMonthlyIncomeInput').value = (state.extraMonthlyIncome && state.extraMonthlyIncome[state.scope]) || '';
+      document.getElementById('sharedPctInput').value = state.sharedPct;
+      document.getElementById('stipendInput').value = state.stipend;
+      document.getElementById('goalsAllocInput').value = state.goalsAlloc;
+      document.getElementById('checkingBalanceInput').value = (state.checkingBalances && state.checkingBalances[state.scope]) || '';
+    }
+
+    function saveState() {
+      if (isApplyingRemote) return;
+      saveToLocalDevice();
+      if (!currentUser || !personalDocRef) {
+        updateSyncBadge('נשמר במכשיר 🔒', true);
+        return;
+      }
+      updateSyncBadge('שומר...', false);
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(async () => {
+        if (!currentUser || !personalDocRef) return;
+        try {
+          const personalPayload = extractPersonalSlice(state);
+          await setDoc(personalDocRef, {
+            payload: JSON.stringify(personalPayload),
+            sharedGroupId: state.sharedGroupId,
+            updatedAt: Date.now()
+          }, { merge: true });
+
+          if (sharedDocRef && state.sharedGroupId) {
+            const sharedPayload = extractSharedSlice(state);
+            await setDoc(sharedDocRef, {
+              payload: JSON.stringify(sharedPayload),
+              groupId: state.sharedGroupId,
+              updatedAt: Date.now()
+            }, { merge: true });
+          }
+
+          updateSyncBadge('נשמר בענן ✓', true);
+        } catch (err) {
+          console.error('Save error:', err);
+          updateSyncBadge('שגיאת שמירה', false);
+        }
+      }, 350);
+    }
+
+    async function subscribeToSharedGroup(groupId) {
+      if (unsubscribeShared) {
+        unsubscribeShared();
+        unsubscribeShared = null;
+      }
+      if (!db || !currentUser || !groupId) return;
+
+      sharedDocRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'sharedAccounts', groupId);
+      const sharedSnap = await getDoc(sharedDocRef);
+      if (sharedSnap.exists() && sharedSnap.data().payload) {
+        isApplyingRemote = true;
+        applySharedSliceToState(JSON.parse(sharedSnap.data().payload));
+        syncInputsFromState();
+        renderAll();
+        isApplyingRemote = false;
+      } else {
+        await setDoc(sharedDocRef, {
+          payload: JSON.stringify(extractSharedSlice(state)),
+          groupId: groupId,
+          updatedAt: Date.now()
+        }, { merge: true });
+      }
+
+      unsubscribeShared = onSnapshot(sharedDocRef, (docSnap) => {
+        if (docSnap.metadata.hasPendingWrites) return;
+        if (docSnap.exists() && docSnap.data().payload) {
+          isApplyingRemote = true;
+          applySharedSliceToState(JSON.parse(docSnap.data().payload));
+          syncInputsFromState();
+          renderAll();
+          isApplyingRemote = false;
+        }
+      }, (error) => {
+        console.error('Shared snapshot error:', error);
+      });
+    }
+
+    async function setupUserSession(user) {
+      if (unsubscribePersonal) {
+        unsubscribePersonal();
+        unsubscribePersonal = null;
+      }
+      if (unsubscribeShared) {
+        unsubscribeShared();
+        unsubscribeShared = null;
+      }
+
+      currentUser = user;
+      if (!currentUser || !db) return;
+
+      personalDocRef = doc(db, 'artifacts', currentAppId, 'users', currentUser.uid, 'financeState', 'personal');
+      const snap = await getDoc(personalDocRef);
+
+      if (snap.exists() && snap.data().payload) {
+        isApplyingRemote = true;
+        const pData = JSON.parse(snap.data().payload);
+        state = mergeWithDefault(pData);
+        if (typeof pData.checkingBalancePersonal === 'number') {
+          state.checkingBalances['אישי'] = pData.checkingBalancePersonal;
+        }
+        if (typeof pData.extraMonthlyIncomePersonal === 'number') {
+          state.extraMonthlyIncome['אישי'] = pData.extraMonthlyIncomePersonal;
+        }
+        if (!state.sharedGroupId) {
+          state.sharedGroupId = snap.data().sharedGroupId || generateGroupCode(currentUser.uid);
+        }
+        syncInputsFromState();
+        applyScopeUI();
+        renderAll();
+        isApplyingRemote = false;
+      } else {
+        if (!state.sharedGroupId) {
+          state.sharedGroupId = generateGroupCode(currentUser.uid);
+        }
+        await setDoc(personalDocRef, {
+          payload: JSON.stringify(extractPersonalSlice(state)),
+          sharedGroupId: state.sharedGroupId,
+          updatedAt: Date.now()
+        });
+      }
+
+      await subscribeToSharedGroup(state.sharedGroupId);
+      updateAccountModalUI();
+      updateSyncBadge('נשמר בענן ✓', true);
+
+      unsubscribePersonal = onSnapshot(personalDocRef, (docSnap) => {
+        if (docSnap.metadata.hasPendingWrites) return;
+        if (docSnap.exists() && docSnap.data().payload) {
+          const pData = JSON.parse(docSnap.data().payload);
+          isApplyingRemote = true;
+          state.scope = pData.scope || state.scope;
+          state.salary = pData.salary ?? state.salary;
+          if (!state.extraMonthlyIncome) state.extraMonthlyIncome = { 'אישי': 0, 'משותף': 0 };
+          if (typeof pData.extraMonthlyIncomePersonal === 'number') {
+            state.extraMonthlyIncome['אישי'] = pData.extraMonthlyIncomePersonal;
+          }
+          state.sharedPct = pData.sharedPct ?? state.sharedPct;
+          state.stipend = pData.stipend ?? state.stipend;
+          state.goalsAlloc = pData.goalsAlloc ?? state.goalsAlloc;
+          state.budgets = { ...DEFAULT_STATE.budgets, ...(pData.budgets || {}) };
+          const sharedTxs = state.transactions.filter(t => t.account === 'משותף');
+          state.transactions = [...(pData.transactions || []), ...sharedTxs];
+          const sharedFixed = state.fixedExpenses.filter(f => f.account === 'משותף');
+          state.fixedExpenses = [...(pData.fixedExpenses || []), ...sharedFixed];
+          const sharedAssets = state.assets.filter(a => a.account === 'משותף');
+          state.assets = [...(pData.assets || []), ...sharedAssets];
+          if (typeof pData.checkingBalancePersonal === 'number') {
+            state.checkingBalances['אישי'] = pData.checkingBalancePersonal;
+          }
+          const sharedCGoals = (state.checkingGoals || []).filter(g => g.account === 'משותף');
+          state.checkingGoals = [...(pData.checkingGoals || []), ...sharedCGoals];
+          syncInputsFromState();
+          applyScopeUI();
+          renderAll();
+          isApplyingRemote = false;
+        }
+      }, (error) => {
+        console.error('Personal snapshot error:', error);
+      });
+    }
+
+    async function initCloudStorage() {
+      loadFromLocalDevice();
+      checkPrivacyLockOnBoot();
+      try {
+        currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        if (!firebaseConfig) {
+          updateSyncBadge('מצב פרטי במכשיר 🔒', true);
+          return;
+        }
+        appInstance = initializeApp(firebaseConfig);
+        authInstance = getAuth(appInstance);
+        db = getFirestore(appInstance);
+
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(authInstance, __initial_auth_token);
+        } else if (!authInstance.currentUser) {
+          await signInAnonymously(authInstance);
+        }
+
+        if (authInstance.currentUser) {
+          await setupUserSession(authInstance.currentUser);
+        }
+      } catch (e) {
+        console.error('Cloud init error:', e);
+        updateSyncBadge('שמירה לא זמינה', false);
+      }
+    }
+
+    function formatNIS(num) {
+      const rounded = Math.round(Number(num) || 0);
+      return rounded.toLocaleString('he-IL') + ' ₪';
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 2800);
+    }
+
+    function computeMetrics() {
+      const isPersonal = state.scope === 'אישי';
+      const personalPct = (100 - state.sharedPct) / 100;
+      const sharedPctFrac = state.sharedPct / 100;
+      const salaryPersonal = (Number(state.salary) || 0) * personalPct;
+      const salaryShared = (Number(state.salary) || 0) * sharedPctFrac;
+      const partnerSalary = Number(state.partnerSalary) || 0;
+      const partnerSalaryShared = partnerSalary * sharedPctFrac;
+      const activePartnerSalary = isPersonal ? 0 : partnerSalaryShared;
+      const salaryAllocated = isPersonal ? salaryPersonal : salaryShared;
+      const activePct = isPersonal ? (100 - state.sharedPct) : state.sharedPct;
+      const stipend = Number(state.stipend) || 0;
+      const activeStipend = isPersonal ? stipend : 0;
+      const baseGoalsAlloc = Number(state.goalsAlloc) || 0;
+
+      const scopedCheckingGoals = (state.checkingGoals || []).filter(g => g.account === state.scope);
+      const checkingMonthlyGoalsTotal = scopedCheckingGoals.reduce((sum, g) => sum + (Number(g.monthly) || 0), 0);
+      const checkingSavedGoalsTotal = scopedCheckingGoals.reduce((sum, g) => sum + (Number(g.saved) || 0), 0);
+      const checkingBalance = Number((state.checkingBalances && state.checkingBalances[state.scope]) || 0);
+      const checkingFreeBalance = checkingBalance - checkingSavedGoalsTotal;
+
+      const goalsAlloc = baseGoalsAlloc + checkingMonthlyGoalsTotal;
+
+      const scopedTx = state.transactions.filter(t => t.account === state.scope);
+
+      const txExtraIncome = scopedTx
+        .filter(t => t.type === 'הכנסה')
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+      const fixedExtraIncome = Number((state.extraMonthlyIncome && state.extraMonthlyIncome[state.scope]) || 0);
+      const extraIncome = fixedExtraIncome + txExtraIncome;
+
+      const scopedFixed = state.fixedExpenses.filter(f => f.account === state.scope);
+      const fixedExpensesTotal = scopedFixed.reduce((sum, f) => {
+        const amt = Number(f.amount) || 0;
+        return sum + (f.freq === 'דו-חודשי' ? amt / 2 : amt);
+      }, 0);
+
+      const varExpensesTotal = scopedTx
+        .filter(t => t.type === 'הוצאה')
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+      const totalExpenses = fixedExpensesTotal + varExpensesTotal;
+
+      const cashflowSurplus = salaryAllocated + activePartnerSalary + extraIncome - totalExpenses - goalsAlloc;
+      const totalInvestableMargin = activeStipend + cashflowSurplus;
+      const totalPersonalIncome = salaryAllocated + activePartnerSalary + activeStipend + extraIncome;
+
+      const scopedAssets = state.assets.filter(a => a.account === state.scope);
+
+      let liquid = 0;
+      let invested = 0;
+      let liabilities = 0;
+      scopedAssets.forEach(a => {
+        const val = Number(a.amount) || 0;
+        if (a.type === 'נזיל') liquid += val;
+        else if (a.type === 'התחייבות') liabilities += Math.abs(val);
+        else invested += val;
+      });
+      const netWorth = liquid + invested - liabilities;
+
+      return {
+        isPersonal,
+        activePct,
+        personalPct,
+        salaryPersonal,
+        salaryShared,
+        partnerSalary,
+        partnerSalaryShared,
+        activePartnerSalary,
+        salaryAllocated,
+        stipend,
+        activeStipend,
+        baseGoalsAlloc,
+        checkingBalance,
+        checkingFreeBalance,
+        checkingMonthlyGoalsTotal,
+        checkingSavedGoalsTotal,
+        scopedCheckingGoals,
+        goalsAlloc,
+        extraIncome,
+        scopedFixed,
+        fixedExpensesTotal,
+        varExpensesTotal,
+        totalExpenses,
+        cashflowSurplus,
+        totalInvestableMargin,
+        totalPersonalIncome,
+        liquid,
+        invested,
+        netWorth,
+        scopedTx,
+        scopedAssets
+      };
+    }
+
+    function renderAll() {
+      const m = computeMetrics();
+
+      // Scope header & KPIs
+      document.getElementById('headerTitle').textContent = `ממשק פיננסי — חשבון ${state.scope}`;
+      document.getElementById('kpiIncomeLabel').textContent = `הכנסה זמינה בחשבון ${state.scope} (חודשית)`;
+      document.getElementById('kpiIncome').textContent = formatNIS(m.totalPersonalIncome);
+      document.getElementById('kpiIncomeSub').textContent = m.isPersonal
+        ? `${m.activePct}% ממשכורת + קצבה ${formatNIS(m.activeStipend)}`
+        : `${m.activePct}% ממשכורת 1 + ${m.activePct}% ממשכורת 2`;
+
+      document.getElementById('kpiExpenses').textContent = formatNIS(m.totalExpenses);
+      document.getElementById('kpiMargin').textContent = formatNIS(m.totalInvestableMargin);
+      document.getElementById('kpiMarginSub').textContent = m.isPersonal
+        ? `קצבה מוקצית ${formatNIS(m.activeStipend)} + עודף תזרימי ${formatNIS(m.cashflowSurplus)}`
+        : `עודף תזרימי בחשבון משותף`;
+
+      document.getElementById('kpiNetWorth').textContent = formatNIS(m.netWorth);
+      document.getElementById('kpiNetWorthSub').textContent = `עו"ש: ${formatNIS(m.checkingBalance)} • נזיל: ${formatNIS(m.liquid)}`;
+
+      // Breakdown
+      document.getElementById('splitDisplay').textContent =
+        `${state.sharedPct}% משותף / ${100 - state.sharedPct}% אישי`;
+      document.getElementById('bdSalaryLabel').innerHTML = m.isPersonal
+        ? `חלק אישי ממשכורת/מלגה (<span id="personalPctLbl">${m.activePct}%</span>):`
+        : `חלק משותף ממשכורת 1 (<span id="personalPctLbl">${m.activePct}%</span>):`;
+      document.getElementById('bdPartnerSalaryRow').classList.toggle('hidden', m.isPersonal);
+      document.getElementById('partnerPctLbl').textContent = `${m.activePct}%`;
+      document.getElementById('bdPartnerSalary').textContent = formatNIS(m.activePartnerSalary);
+      document.getElementById('bdStipendRow').classList.toggle('hidden', !m.isPersonal);
+      document.getElementById('bdSalaryPersonal').textContent = formatNIS(m.salaryAllocated);
+      document.getElementById('bdExtraIncome').textContent = formatNIS(m.extraIncome);
+      document.getElementById('bdFixedExpenses').textContent = m.fixedExpensesTotal > 0 ? `-${formatNIS(m.fixedExpensesTotal)}` : '0 ₪';
+      document.getElementById('bdVarExpenses').textContent = m.varExpensesTotal > 0 ? `-${formatNIS(m.varExpensesTotal)}` : '0 ₪';
+      document.getElementById('bdGoals').textContent = m.goalsAlloc > 0 ? `-${formatNIS(m.goalsAlloc)}` : '0 ₪';
+      document.getElementById('bdCashflowSurplus').textContent = formatNIS(m.cashflowSurplus);
+      document.getElementById('bdStipend').textContent = formatNIS(m.activeStipend);
+      document.getElementById('bdTotalMargin').textContent = formatNIS(m.totalInvestableMargin);
+
+      renderCheckingSection(m);
+      renderFixedExpenses(m);
+      renderBudgetEditor();
+      renderCharts(m);
+      renderTransactions(m.scopedTx);
+      renderAssets(m);
+      renderSimulator();
+    }
+
+    function renderCheckingSection(m) {
+      document.getElementById('checkingTitle').textContent = `מצב עו"ש ויעדים בעו"ש (חשבון ${state.scope})`;
+      document.getElementById('checkingBalanceInput').value = m.checkingBalance || '';
+      document.getElementById('checkingMonthlyGoalsTotal').textContent = `${formatNIS(m.checkingMonthlyGoalsTotal)} / חודש`;
+      const freeBadge = document.getElementById('checkingFreeBadge');
+      freeBadge.textContent = `פנוי בעו"ש: ${formatNIS(m.checkingFreeBalance)}`;
+      freeBadge.className = m.checkingFreeBalance >= 0
+        ? 'rounded-lg bg-sky-100 px-2.5 py-1 text-xs font-bold text-sky-900'
+        : 'rounded-lg bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-800';
+
+      const list = document.getElementById('checkingGoalsList');
+      list.innerHTML = '';
+
+      if (m.scopedCheckingGoals.length === 0) {
+        list.innerHTML = '<p class="text-center text-[11px] text-slate-400 py-1">אין יעדים בעו"ש לחשבון זה. הוסף יעד למטה כדי להפריש אליו כל חודש.</p>';
+        return;
+      }
+
+      m.scopedCheckingGoals.forEach(goal => {
+        const saved = Number(goal.saved) || 0;
+        const target = Number(goal.target) || 0;
+        const pct = target > 0 ? Math.min(100, Math.round((saved / target) * 100)) : 0;
+        const card = document.createElement('div');
+        card.className = 'rounded-lg border border-sky-200/80 bg-white p-2.5';
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <p class="truncate text-xs font-bold text-slate-800">${goal.name}</p>
+              <p class="text-[10px] text-slate-500">${target > 0 ? `צבור ${formatNIS(saved)} מתוך ${formatNIS(target)} (${pct}%)` : `צבור בעו"ש: ${formatNIS(saved)}`}</p>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" data-deposit-cg="${goal.id}" title="הפקד הפרשה חודשית לצבור" class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-200">+הפקד חודש</button>
+              <button type="button" data-del-cg="${goal.id}" class="px-1 text-xs text-rose-500 hover:underline">×</button>
+            </div>
+          </div>
+          ${target > 0 ? `<div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100"><div class="h-full bg-[#0f4c5c] transition-all" style="width:${pct}%"></div></div>` : ''}
+          <div class="mt-2 grid grid-cols-3 gap-1.5 text-[10px]">
+            <div>
+              <label class="block text-slate-500">חודשי (₪)</label>
+              <input type="number" min="0" step="50" value="${goal.monthly || ''}" placeholder="0" data-cg-monthly="${goal.id}" class="mt-0.5 w-full rounded border border-slate-300 px-1.5 py-1 text-xs font-semibold text-left" />
+            </div>
+            <div>
+              <label class="block text-slate-500">צבור בעו"ש (₪)</label>
+              <input type="number" min="0" step="50" value="${goal.saved || ''}" placeholder="0" data-cg-saved="${goal.id}" class="mt-0.5 w-full rounded border border-slate-300 px-1.5 py-1 text-xs font-semibold text-left" />
+            </div>
+            <div>
+              <label class="block text-slate-500">יעד סופי (₪)</label>
+              <input type="number" min="0" step="100" value="${goal.target || ''}" placeholder="0" data-cg-target="${goal.id}" class="mt-0.5 w-full rounded border border-slate-300 px-1.5 py-1 text-xs font-semibold text-left" />
+            </div>
+          </div>
+        `;
+
+        card.querySelector('[data-cg-monthly]').addEventListener('input', e => {
+          goal.monthly = Number(e.target.value) || 0;
+          saveState();
+          const up = computeMetrics();
+          document.getElementById('checkingMonthlyGoalsTotal').textContent = `${formatNIS(up.checkingMonthlyGoalsTotal)} / חודש`;
+          document.getElementById('bdGoals').textContent = up.goalsAlloc > 0 ? `-${formatNIS(up.goalsAlloc)}` : '0 ₪';
+          document.getElementById('bdCashflowSurplus').textContent = formatNIS(up.cashflowSurplus);
+          document.getElementById('bdTotalMargin').textContent = formatNIS(up.totalInvestableMargin);
+          document.getElementById('kpiMargin').textContent = formatNIS(up.totalInvestableMargin);
+          document.getElementById('kpiMarginSub').textContent = up.isPersonal
+            ? `קצבה מוקצית ${formatNIS(up.activeStipend)} + עודף תזרימי ${formatNIS(up.cashflowSurplus)}`
+            : `עודף תזרימי בחשבון משותף`;
+          renderCharts(up);
+        });
+
+        card.querySelector('[data-cg-saved]').addEventListener('input', e => {
+          goal.saved = Number(e.target.value) || 0;
+          saveState();
+          const up = computeMetrics();
+          const badge = document.getElementById('checkingFreeBadge');
+          badge.textContent = `פנוי בעו"ש: ${formatNIS(up.checkingFreeBalance)}`;
+          badge.className = up.checkingFreeBalance >= 0
+            ? 'rounded-lg bg-sky-100 px-2.5 py-1 text-xs font-bold text-sky-900'
+            : 'rounded-lg bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-800';
+        });
+
+        card.querySelector('[data-cg-target]').addEventListener('input', e => {
+          goal.target = Number(e.target.value) || 0;
+          saveState();
+        });
+
+        card.querySelector('[data-deposit-cg]').addEventListener('click', () => {
+          const add = Number(goal.monthly) || 0;
+          if (add <= 0) {
+            showToast('הזן קודם סכום הפרשה חודשית ליעד');
+            return;
+          }
+          goal.saved = (Number(goal.saved) || 0) + add;
+          saveState();
+          renderAll();
+          showToast(`הופקדו ${formatNIS(add)} ליעד "${goal.name}"`);
+        });
+
+        card.querySelector('[data-del-cg]').addEventListener('click', () => {
+          state.checkingGoals = state.checkingGoals.filter(g => g.id !== goal.id);
+          saveState();
+          renderAll();
+        });
+
+        list.appendChild(card);
+      });
+    }
+
+    function renderFixedExpenses(m) {
+      document.getElementById('fixedExpTitle').textContent = `הוצאות שוטפות קבועות (חשבון ${state.scope})`;
+      document.getElementById('fixedExpTotalBadge').textContent = `${formatNIS(m.fixedExpensesTotal)} / חודש`;
+      const list = document.getElementById('fixedExpensesList');
+      list.innerHTML = '';
+
+      m.scopedFixed.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2';
+        const monthlyVal = item.freq === 'דו-חודשי' ? (Number(item.amount) || 0) / 2 : (Number(item.amount) || 0);
+        row.innerHTML = `
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-xs font-bold text-slate-800">${item.name}</p>
+            <div class="mt-0.5 flex items-center gap-1.5">
+              <button type="button" data-toggle-freq="${item.id}" class="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 hover:bg-slate-300">
+                ${item.freq === 'דו-חודשי' ? 'דו-חודשי (÷2)' : 'חודשי'}
+              </button>
+              ${item.freq === 'דו-חודשי' ? `<span data-monthly-preview class="text-[10px] text-slate-500">= ${formatNIS(monthlyVal)}/חודש</span>` : ''}
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <input type="number" min="0" step="10" value="${item.amount || ''}" placeholder="0" data-fixed-id="${item.id}"
+              class="w-24 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-left focus:border-[#0f4c5c] focus:outline-none" />
+            <button type="button" data-del-fixed="${item.id}" class="text-[11px] text-rose-500 hover:underline px-1">×</button>
+          </div>
+        `;
+        row.querySelector('[data-fixed-id]').addEventListener('input', e => {
+          item.amount = Number(e.target.value) || 0;
+          saveState();
+          const updated = computeMetrics();
+          document.getElementById('fixedExpTotalBadge').textContent = `${formatNIS(updated.fixedExpensesTotal)} / חודש`;
+          document.getElementById('kpiExpenses').textContent = formatNIS(updated.totalExpenses);
+          document.getElementById('kpiMargin').textContent = formatNIS(updated.totalInvestableMargin);
+          document.getElementById('kpiMarginSub').textContent = updated.isPersonal
+            ? `קצבה מוקצית ${formatNIS(updated.activeStipend)} + עודף תזרימי ${formatNIS(updated.cashflowSurplus)}`
+            : `עודף תזרימי בחשבון משותף`;
+          document.getElementById('bdFixedExpenses').textContent = updated.fixedExpensesTotal > 0 ? `-${formatNIS(updated.fixedExpensesTotal)}` : '0 ₪';
+          document.getElementById('bdCashflowSurplus').textContent = formatNIS(updated.cashflowSurplus);
+          document.getElementById('bdTotalMargin').textContent = formatNIS(updated.totalInvestableMargin);
+          const spanMonthly = row.querySelector('[data-monthly-preview]');
+          if (spanMonthly) {
+            spanMonthly.textContent = `= ${formatNIS(item.amount / 2)}/חודש`;
+          }
+          renderCharts(updated);
+        });
+        row.querySelector('[data-toggle-freq]').addEventListener('click', () => {
+          item.freq = item.freq === 'חודשי' ? 'דו-חודשי' : 'חודשי';
+          saveState();
+          renderAll();
+        });
+        row.querySelector('[data-del-fixed]').addEventListener('click', () => {
+          state.fixedExpenses = state.fixedExpenses.filter(f => f.id !== item.id);
+          saveState();
+          renderAll();
+        });
+        list.appendChild(row);
+      });
+    }
+
+    function renderBudgetEditor() {
+      const grid = document.getElementById('budgetInputsGrid');
+      grid.innerHTML = '';
+      CATEGORIES.forEach(cat => {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `
+          <label class="block text-[11px] font-semibold text-slate-600">${cat}</label>
+          <input type="number" min="0" step="50" data-budget-cat="${cat}" value="${state.budgets[cat] || 0}"
+            class="mt-0.5 w-full rounded border border-slate-300 bg-white px-2 py-1 text-xs" />
+        `;
+        wrap.querySelector('input').addEventListener('input', (e) => {
+          state.budgets[cat] = Number(e.target.value) || 0;
+          saveState();
+          renderCharts(computeMetrics());
+        });
+        grid.appendChild(wrap);
+      });
+    }
+
+    function renderCharts(m) {
+      const actualByCat = CATEGORIES.map(cat =>
+        m.scopedTx
+          .filter(t => t.type === 'הוצאה' && t.category === cat)
+          .reduce((s, t) => s + (Number(t.amount) || 0), 0)
+      );
+      const budgetByCat = CATEGORIES.map(cat => Number(state.budgets[cat]) || 0);
+
+      const ctx1 = document.getElementById('expensesChart').getContext('2d');
+      if (expensesChart) expensesChart.destroy();
+      expensesChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: CATEGORIES,
+          datasets: [
+            {
+              label: 'בפועל (₪)',
+              data: actualByCat,
+              backgroundColor: '#0f4c5c',
+              borderRadius: 6
+            },
+            {
+              label: 'תקציב יעד (₪)',
+              data: budgetByCat,
+              backgroundColor: '#cbd5e1',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      const ctx2 = document.getElementById('allocationChart').getContext('2d');
+      if (allocationChart) allocationChart.destroy();
+      const allocData = [
+        Math.max(0, m.salaryShared),
+        Math.max(0, m.totalExpenses),
+        Math.max(0, m.goalsAlloc),
+        Math.max(0, m.totalInvestableMargin)
+      ];
+      allocationChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['הפרשה לחשבון משותף', 'הוצאות שוטפות', 'יעדים קצרי טווח', 'מרווח פנוי להשקעה'],
+          datasets: [{
+            data: allocData.every(v => v === 0) ? [80, 0, 0, 20] : allocData,
+            backgroundColor: ['#64748b', '#e11d48', '#f59e0b', '#10b981'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'right' } }
+        }
+      });
+    }
+
+    function renderTransactions(scopedTx) {
+      const filter = document.getElementById('filterType').value;
+      const filtered = filter === 'ALL' ? scopedTx : scopedTx.filter(t => t.type === filter);
+      const tbody = document.getElementById('txTableBody');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-xs text-slate-400">אין תנועות להצגה כרגע. הוסף תנועה חדשה או ייבא קובץ CSV.</td></tr>';
+        return;
+      }
+
+      filtered.slice().reverse().forEach(tx => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        const badgeColor =
+          tx.type === 'הוצאה' ? 'bg-rose-100 text-rose-700' :
+          tx.type === 'הכנסה' ? 'bg-sky-100 text-sky-700' :
+          tx.type === 'השקעה' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800';
+
+        tr.innerHTML = `
+          <td class="py-2.5 pr-2 text-xs text-slate-600">${tx.date}</td>
+          <td class="py-2.5"><span class="rounded-full px-2 py-0.5 text-xs font-semibold ${badgeColor}">${tx.type}</span></td>
+          <td class="py-2.5 text-xs text-slate-600">${tx.account}</td>
+          <td class="py-2.5 text-xs font-medium text-slate-800">${tx.category}</td>
+          <td class="py-2.5 text-xs text-slate-600">${tx.desc || '—'}</td>
+          <td class="py-2.5 font-bold text-slate-900">${formatNIS(tx.amount)}</td>
+          <td class="py-2.5 pl-2 text-left">
+            <button type="button" data-del-tx="${tx.id}" class="text-xs text-rose-600 hover:underline">מחק</button>
+          </td>
+        `;
+        tr.querySelector('[data-del-tx]').addEventListener('click', () => {
+          state.transactions = state.transactions.filter(item => item.id !== tx.id);
+          saveState();
+          applyScopeUI();
+          renderAll();
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAssets(m) {
+      const list = document.getElementById('assetsList');
+      list.innerHTML = '';
+      if (m.scopedAssets.length === 0) {
+        list.innerHTML = '<p class="py-4 text-center text-xs text-slate-400">אין נכסים רשומים בחשבון זה עדיין. הוסף נכס למטה.</p>';
+      }
+      m.scopedAssets.forEach(asset => {
+        const row = document.createElement('div');
+        row.className = 'flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3';
+        row.innerHTML = `
+          <div>
+            <p class="text-sm font-bold text-slate-900">${asset.name}</p>
+            <p class="text-xs text-slate-500">${asset.type} • חשבון ${asset.account}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="number" step="100" value="${asset.amount}" data-asset-id="${asset.id}"
+              class="w-32 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-left" />
+            <button type="button" data-del-asset="${asset.id}" class="text-xs text-rose-600 hover:underline">הסר</button>
+          </div>
+        `;
+        row.querySelector('[data-asset-id]').addEventListener('input', (e) => {
+          asset.amount = Number(e.target.value) || 0;
+          saveState();
+          const updatedM = computeMetrics();
+          document.getElementById('kpiNetWorth').textContent = formatNIS(updatedM.netWorth);
+          document.getElementById('kpiNetWorthSub').textContent = `נזיל מיידית: ${formatNIS(updatedM.liquid)}`;
+          document.getElementById('nwLiquidTotal').textContent = formatNIS(updatedM.liquid);
+          document.getElementById('nwInvestedTotal').textContent = formatNIS(updatedM.invested);
+          document.getElementById('nwEmergencyMonths').textContent =
+            updatedM.totalExpenses > 0 ? `${(updatedM.liquid / updatedM.totalExpenses).toFixed(1)} חודשים` : 'הזן הוצאות לחישוב';
+        });
+        row.querySelector('[data-del-asset]').addEventListener('click', () => {
+          state.assets = state.assets.filter(a => a.id !== asset.id);
+          saveState();
+          renderAll();
+        });
+        list.appendChild(row);
+      });
+
+      document.getElementById('nwLiquidTotal').textContent = formatNIS(m.liquid);
+      document.getElementById('nwInvestedTotal').textContent = formatNIS(m.invested);
+      document.getElementById('nwEmergencyMonths').textContent =
+        m.totalExpenses > 0 ? `${(m.liquid / m.totalExpenses).toFixed(1)} חודשים` : 'הזן הוצאות לחישוב';
+    }
+
+    function renderSimulator() {
+      const monthly = Number(document.getElementById('simMonthly').value) || 0;
+      const initial = Number(document.getElementById('simInitial').value) || 0;
+      const annualRate = (Number(document.getElementById('simRate').value) || 0) / 100;
+      const years = Number(document.getElementById('simYears').value) || 1;
+
+      document.getElementById('simRateLbl').textContent = `${(annualRate * 100).toFixed(1)}%`;
+      document.getElementById('simYearsLbl').textContent = `${years} שנים`;
+
+      const monthlyRate = annualRate / 12;
+      const labels = ['התחלה'];
+      const totalSeries = [initial];
+      const contribSeries = [initial];
+
+      let bal = initial;
+      let contrib = initial;
+      for (let y = 1; y <= years; y++) {
+        for (let m = 0; m < 12; m++) {
+          bal = bal * (1 + monthlyRate) + monthly;
+          contrib += monthly;
+        }
+        labels.push(`שנה ${y}`);
+        totalSeries.push(Math.round(bal));
+        contribSeries.push(Math.round(contrib));
+      }
+
+      const profit = Math.max(0, Math.round(bal - contrib));
+      document.getElementById('simTotalValue').textContent = formatNIS(bal);
+      document.getElementById('simBreakdown').textContent =
+        `סך הפקדות: ${formatNIS(contrib)} | רווח ריבית דריבית: ${formatNIS(profit)}`;
+
+      const ctx = document.getElementById('simChart').getContext('2d');
+      if (simChart) simChart.destroy();
+      simChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'שווי תיק כולל (₪)',
+              data: totalSeries,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.12)',
+              fill: true,
+              tension: 0.25
+            },
+            {
+              label: 'סך הפקדות עצמיות (₪)',
+              data: contribSeries,
+              borderColor: '#64748b',
+              borderDash: [5, 5],
+              fill: false,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    // Init inputs & listeners
+    syncInputsFromState();
+    document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
+
+    document.getElementById('salaryInput').addEventListener('input', e => {
+      state.salary = Number(e.target.value) || 0;
+      saveState();
+      renderAll();
+    });
+    document.getElementById('partnerSalaryInput').addEventListener('input', e => {
+      state.partnerSalary = Number(e.target.value) || 0;
+      saveState();
+      renderAll();
+    });
+    document.getElementById('extraMonthlyIncomeInput').addEventListener('input', e => {
+      if (!state.extraMonthlyIncome) state.extraMonthlyIncome = { 'אישי': 0, 'משותף': 0 };
+      state.extraMonthlyIncome[state.scope] = Number(e.target.value) || 0;
+      saveState();
+      renderAll();
+    });
+    document.getElementById('sharedPctInput').addEventListener('input', e => {
+      state.sharedPct = Number(e.target.value) || 0;
+      saveState();
+      renderAll();
+    });
+    document.getElementById('stipendInput').addEventListener('input', e => {
+      state.stipend = Number(e.target.value) || 0;
+      saveState();
+      renderAll();
+    });
+    document.getElementById('goalsAllocInput').addEventListener('input', e => {
+      state.goalsAlloc = Number(e.target.value) || 0;
+      saveState();
+      renderAll();
+    });
+
+    document.getElementById('checkingBalanceInput').addEventListener('input', e => {
+      const val = Number(e.target.value) || 0;
+      if (!state.checkingBalances) state.checkingBalances = { 'אישי': 0, 'משותף': 0 };
+      state.checkingBalances[state.scope] = val;
+      // Sync corresponding checking asset row if present
+      const checkingAsset = state.assets.find(a => a.account === state.scope && a.type === 'נזיל' && a.name.includes('עו"ש'));
+      if (checkingAsset) {
+        checkingAsset.amount = val;
+      }
+      saveState();
+      const up = computeMetrics();
+      const badge = document.getElementById('checkingFreeBadge');
+      badge.textContent = `פנוי בעו"ש: ${formatNIS(up.checkingFreeBalance)}`;
+      badge.className = up.checkingFreeBalance >= 0
+        ? 'rounded-lg bg-sky-100 px-2.5 py-1 text-xs font-bold text-sky-900'
+        : 'rounded-lg bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-800';
+      document.getElementById('kpiNetWorth').textContent = formatNIS(up.netWorth);
+      document.getElementById('kpiNetWorthSub').textContent = `עו"ש: ${formatNIS(up.checkingBalance)} • נזיל: ${formatNIS(up.liquid)}`;
+      renderAssets(up);
+    });
+
+    document.getElementById('addCheckingGoalForm').addEventListener('submit', e => {
+      e.preventDefault();
+      if (!state.checkingGoals) state.checkingGoals = [];
+      state.checkingGoals.push({
+        id: 'cg_' + Date.now(),
+        account: state.scope,
+        name: document.getElementById('newCGoalName').value.trim(),
+        target: Number(document.getElementById('newCGoalTarget').value) || 0,
+        saved: 0,
+        monthly: Number(document.getElementById('newCGoalMonthly').value) || 0
+      });
+      document.getElementById('newCGoalName').value = '';
+      document.getElementById('newCGoalTarget').value = '';
+      document.getElementById('newCGoalMonthly').value = '';
+      saveState();
+      renderAll();
+      showToast('יעד העו"ש נוסף בהצלחה');
+    });
+
+    // Scope buttons
+    function applyScopeUI() {
+      const isP = state.scope === 'אישי';
+      document.getElementById('scopePersonalBtn').className = isP
+        ? 'rounded-md bg-white px-3 py-1.5 text-[#0f4c5c] shadow-sm transition'
+        : 'rounded-md px-3 py-1.5 text-white hover:bg-white/10 transition';
+      document.getElementById('scopeSharedBtn').className = !isP
+        ? 'rounded-md bg-white px-3 py-1.5 text-[#0f4c5c] shadow-sm transition'
+        : 'rounded-md px-3 py-1.5 text-white hover:bg-white/10 transition';
+      document.getElementById('salaryInputLabel').textContent = isP
+        ? 'משכורת / מלגה חודשית נטו (₪)'
+        : 'משכורת 1 חודשית נטו (₪)';
+      document.getElementById('partnerSalaryWrapper').classList.toggle('hidden', isP);
+      document.getElementById('stipendInputWrapper').classList.toggle('hidden', !isP);
+      document.getElementById('stipendGoalsGrid').className = isP ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-1 gap-3';
+      document.getElementById('txAccount').value = state.scope;
+      document.getElementById('extraMonthlyIncomeInput').value = (state.extraMonthlyIncome && state.extraMonthlyIncome[state.scope]) || '';
+      document.getElementById('checkingBalanceInput').value = (state.checkingBalances && state.checkingBalances[state.scope]) || '';
+    }
+
+    document.getElementById('scopePersonalBtn').addEventListener('click', () => {
+      state.scope = 'אישי';
+      applyScopeUI();
+      saveState();
+      renderAll();
+    });
+    document.getElementById('scopeSharedBtn').addEventListener('click', () => {
+      state.scope = 'משותף';
+      applyScopeUI();
+      saveState();
+      renderAll();
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('active');
+          b.classList.add('text-slate-600');
+        });
+        btn.classList.add('active');
+        btn.classList.remove('text-slate-600');
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    document.getElementById('editBudgetsToggleBtn').addEventListener('click', () => {
+      document.getElementById('budgetEditorPanel').classList.toggle('hidden');
+    });
+
+    document.getElementById('txForm').addEventListener('submit', e => {
+      e.preventDefault();
+      state.transactions.push({
+        id: 'tx_' + Date.now(),
+        date: document.getElementById('txDate').value,
+        type: document.getElementById('txType').value,
+        account: document.getElementById('txAccount').value,
+        category: document.getElementById('txCategory').value,
+        desc: document.getElementById('txDesc').value.trim(),
+        amount: Number(document.getElementById('txAmount').value) || 0
+      });
+      document.getElementById('txDesc').value = '';
+      document.getElementById('txAmount').value = '';
+      saveState();
+      renderAll();
+      showToast('התנועה נוספה בהצלחה');
+    });
+
+    document.getElementById('filterType').addEventListener('change', () => {
+      renderTransactions(computeMetrics().scopedTx);
+    });
+
+    document.getElementById('clearDemoBtn').addEventListener('click', () => {
+      state.transactions = [];
+      saveState();
+      renderAll();
+      showToast('יומן התנועות נוקה');
+    });
+
+    document.getElementById('addFixedExpForm').addEventListener('submit', e => {
+      e.preventDefault();
+      state.fixedExpenses.push({
+        id: 'fx_' + Date.now(),
+        account: state.scope,
+        name: document.getElementById('newFixedName').value.trim(),
+        freq: document.getElementById('newFixedFreq').value,
+        amount: Number(document.getElementById('newFixedAmt').value) || 0
+      });
+      document.getElementById('newFixedName').value = '';
+      document.getElementById('newFixedAmt').value = '';
+      saveState();
+      renderAll();
+      showToast('ההוצאה השוטפת נוספה');
+    });
+
+    document.getElementById('addAssetForm').addEventListener('submit', e => {
+      e.preventDefault();
+      state.assets.push({
+        id: 'a_' + Date.now(),
+        name: document.getElementById('newAssetName').value.trim(),
+        type: document.getElementById('newAssetType').value,
+        account: state.scope,
+        amount: Number(document.getElementById('newAssetAmount').value) || 0
+      });
+      document.getElementById('newAssetName').value = '';
+      document.getElementById('newAssetAmount').value = '';
+      saveState();
+      renderAll();
+      showToast('הנכס נוסף בהצלחה');
+    });
+
+    // Simulator controls
+    ['simMonthly', 'simInitial', 'simRate', 'simYears'].forEach(id => {
+      document.getElementById(id).addEventListener('input', renderSimulator);
+    });
+    document.getElementById('syncMarginBtn').addEventListener('click', () => {
+      const m = computeMetrics();
+      document.getElementById('simMonthly').value = Math.max(0, Math.round(m.totalInvestableMargin));
+      renderSimulator();
+      showToast('הופקד המרווח החודשי הפנוי שלך בסימולטור');
+    });
+
+    // CSV Export (UTF-8 BOM for clean Hebrew in Excel / Google Sheets)
+    document.getElementById('exportCsvBtn').addEventListener('click', () => {
+      const headers = ['תאריך', 'סוג תנועה', 'חשבון', 'קטגוריה', 'תיאור', 'סכום (₪)'];
+      const rows = state.transactions.map(t =>
+        [t.date, t.type, t.account, t.category, (t.desc || '').replace(/,/g, ' '), t.amount].join(',')
+      );
+      const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'transactions_export.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('קובץ CSV ירד למחשב (תואם לייבוא לגיליון)');
+    });
+
+    // CSV Import
+    document.getElementById('csvImportInput').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const text = ev.target.result.replace(/^\uFEFF/, '');
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        let added = 0;
+        lines.slice(1).forEach((line, idx) => {
+          const cols = line.split(',');
+          if (cols.length >= 6) {
+            const amt = parseFloat(cols[5]);
+            if (!isNaN(amt)) {
+              state.transactions.push({
+                id: 'imp_' + Date.now() + '_' + idx,
+                date: cols[0].trim() || new Date().toISOString().slice(0, 10),
+                type: cols[1].trim() || 'הוצאה',
+                account: cols[2].trim() || 'אישי',
+                category: cols[3].trim() || 'שונות',
+                desc: cols[4].trim(),
+                amount: amt
+              });
+              added++;
+            }
+          }
+        });
+        saveState();
+        renderAll();
+        showToast(`יובאו ${added} תנועות בהצלחה`);
+      };
+      reader.readAsText(file, 'UTF-8');
+      e.target.value = '';
+    });
+
+    // Account, Auth & Household Modal Controls
+    document.getElementById('openAccountModalBtn').addEventListener('click', () => {
+      updateAccountModalUI();
+      document.getElementById('accountModal').classList.remove('hidden');
+    });
+    document.getElementById('closeAccountModalBtn').addEventListener('click', () => {
+      document.getElementById('accountModal').classList.add('hidden');
+    });
+
+    document.getElementById('installAppBtn').addEventListener('click', async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          showToast('האפליקציה מותקנת כעת במסך הבית!');
+        }
+        deferredInstallPrompt = null;
+      } else {
+        document.getElementById('installModal').classList.remove('hidden');
+      }
+    });
+    document.getElementById('closeInstallModalBtn').addEventListener('click', () => {
+      document.getElementById('installModal').classList.add('hidden');
+    });
+
+    // Privacy Lock & PIN Controls
+    document.getElementById('privacySettingsBtn').addEventListener('click', () => {
+      document.getElementById('privacySettingsModal').classList.remove('hidden');
+    });
+    document.getElementById('closePrivacyModalBtn').addEventListener('click', () => {
+      document.getElementById('privacySettingsModal').classList.add('hidden');
+    });
+    document.getElementById('lockNowBtn').addEventListener('click', () => {
+      document.getElementById('privacyPinInput').value = '';
+      document.getElementById('lockErrorText').classList.add('hidden');
+      document.getElementById('privacyLockOverlay').classList.remove('hidden');
+    });
+    document.getElementById('setPinForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pin = document.getElementById('newPinInput').value.trim();
+      if (pin.length < 4) return;
+      const hashed = await hashPin(pin);
+      localStorage.setItem(LOCAL_PIN_KEY, hashed);
+      document.getElementById('newPinInput').value = '';
+      document.getElementById('lockNowBtn').classList.remove('hidden');
+      document.getElementById('privacySettingsModal').classList.add('hidden');
+      showToast('קוד הנעילה האישי נשמר! האפליקציה תינעל בכל פתיחה.');
+    });
+    document.getElementById('removePinBtn').addEventListener('click', () => {
+      localStorage.removeItem(LOCAL_PIN_KEY);
+      document.getElementById('lockNowBtn').classList.add('hidden');
+      document.getElementById('privacySettingsModal').classList.add('hidden');
+      showToast('קוד הנעילה הוסר');
+    });
+    document.getElementById('privacyLockForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const entered = document.getElementById('privacyPinInput').value.trim();
+      const savedHash = localStorage.getItem(LOCAL_PIN_KEY);
+      const enteredHash = await hashPin(entered);
+      if (enteredHash === savedHash) {
+        document.getElementById('privacyPinInput').value = '';
+        document.getElementById('lockErrorText').classList.add('hidden');
+        document.getElementById('privacyLockOverlay').classList.add('hidden');
+      } else {
+        document.getElementById('lockErrorText').classList.remove('hidden');
+        document.getElementById('privacyPinInput').select();
+      }
+    });
+
+    document.querySelectorAll('#emailAuthForm button[data-auth-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeAuthMode = btn.dataset.authMode;
+      });
+    });
+
+    document.getElementById('emailAuthForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!authInstance) {
+        showToast('שירות ההתחברות אינו זמין כרגע');
+        return;
+      }
+      const email = document.getElementById('authEmailInput').value.trim();
+      const password = document.getElementById('authPassInput').value;
+      const displayName = document.getElementById('authNameInput').value.trim();
+
+      try {
+        if (activeAuthMode === 'register') {
+          if (authInstance.currentUser && authInstance.currentUser.isAnonymous) {
+            const cred = EmailAuthProvider.credential(email, password);
+            const res = await linkWithCredential(authInstance.currentUser, cred);
+            if (displayName) {
+              await updateProfile(res.user, { displayName });
+            }
+            currentUser = res.user;
+            saveState();
+          } else {
+            const res = await createUserWithEmailAndPassword(authInstance, email, password);
+            if (displayName) {
+              await updateProfile(res.user, { displayName });
+            }
+            await setupUserSession(res.user);
+          }
+          showToast('החשבון נוצר והנתונים נשמרו בהצלחה!');
+        } else {
+          const res = await signInWithEmailAndPassword(authInstance, email, password);
+          await setupUserSession(res.user);
+          showToast('התחברת בהצלחה לחשבון שלך!');
+        }
+        updateAccountModalUI();
+      } catch (err) {
+        console.error('Auth error:', err);
+        let msg = 'שגיאה בהתחברות. בדוק אימייל וסיסמה.';
+        if (err.code === 'auth/email-already-in-use') msg = 'האימייל כבר רשום — לחץ על "התחברות לחשבון קיים".';
+        else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'אימייל או סיסמה שגויים.';
+        else if (err.code === 'auth/weak-password') msg = 'הסיסמה חייבת להכיל לפחות 6 תווים.';
+        showToast(msg);
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      if (!authInstance) return;
+      try {
+        await signOut(authInstance);
+        await signInAnonymously(authInstance);
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        await setupUserSession(authInstance.currentUser);
+        updateAccountModalUI();
+        showToast('התנתקת מהחשבון');
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    document.getElementById('copySharedCodeBtn').addEventListener('click', () => {
+      const code = state.sharedGroupId || '';
+      if (!code) return;
+      const temp = document.createElement('textarea');
+      temp.value = code;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      showToast(`הקוד ${code} הועתק! שלח אותו לבן/בת הזוג`);
+    });
+
+    document.getElementById('joinSharedForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rawCode = document.getElementById('joinSharedCodeInput').value.trim().toUpperCase();
+      if (!rawCode) return;
+      state.sharedGroupId = rawCode;
+      document.getElementById('joinSharedCodeInput').value = '';
+      await subscribeToSharedGroup(rawCode);
+      saveState();
+      updateAccountModalUI();
+      showToast(`הצטרפת לחשבון המשותף (${rawCode})!`);
+    });
+
+    applyScopeUI();
+    renderAll();
+    initCloudStorage();
+  </script>
+</body>
+</html>
